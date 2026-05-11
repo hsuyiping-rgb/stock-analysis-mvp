@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>股價買賣點分析 MVP</title>
+    <link rel="stylesheet" href="styles.css?v=20260511-firebase" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">V</div>
+          <div>
+            <h1>Value Timing</h1>
+            <p>單檔股票健檢與買賣點分析</p>
+          </div>
+        </div>
+
+        <nav class="nav-list" aria-label="主要功能">
+          <a href="#query" class="active">股票查詢</a>
+          <a href="#fundamental">財報健檢</a>
+          <a href="#chips">Free 籌碼</a>
+          <a href="#technical">均線買賣點</a>
+          <a href="#report">AI 報告</a>
+        </nav>
+
+        <div class="notice">
+          <strong>資料來源</strong>
+          <span>Yahoo Finance：股價與日線。MOPS / TWSE OpenAPI：台股月營收與季報。Google Finance：查核連結。</span>
+        </div>
+      </aside>
+
+      <main class="main">
+        <section id="query" class="hero-panel">
+          <div>
+            <p class="eyebrow">台股 / 美股 | 基本面選股 + 技術面進出</p>
+            <h2>輸入股票代號</h2>
+          </div>
+          <form class="search-row" id="stock-form">
+            <label class="search-box">
+              <span>股票代號</span>
+              <input id="ticker-input" name="ticker" placeholder="例如 2357、2454、AAPL、NVDA" autocomplete="off" />
+            </label>
+            <button type="submit" id="analyze-btn">分析</button>
+          </form>
+          <div class="quick-picks" aria-label="範例股票">
+            <button type="button" data-symbol="2357">2357 華碩</button>
+            <button type="button" data-symbol="2454">2454 聯發科</button>
+            <button type="button" data-symbol="AAPL">AAPL</button>
+            <button type="button" data-symbol="NVDA">NVDA</button>
+          </div>
+          <div class="optional-input-card">
+            <label class="check-row">
+              <input id="use-position" type="checkbox" />
+              <span>輸入目前持股數量與持股成本</span>
+            </label>
+            <div class="conditional-grid hidden" id="position-fields">
+              <label>持股數量（股）<input id="holding-shares" type="number" min="0" step="1" placeholder="例如 1000" /></label>
+              <label>持股成本<input id="holding-cost" type="number" min="0" step="0.01" placeholder="例如 1280" /></label>
+              <div class="position-summary" id="position-summary">啟用後會計算未實現損益與成本壓力。</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="stock-header" aria-live="polite">
+          <div>
+            <p id="market-label">台股</p>
+            <h2 id="stock-name">等待查詢</h2>
+            <span id="data-stamp">股價更新時間：-- | 財報季度：-- | 月營收月份：--</span>
+          </div>
+          <div class="price-block">
+            <span>最新價</span>
+            <strong id="last-price">--</strong>
+            <em id="price-change">--</em>
+          </div>
+          <div class="verdict" id="top-verdict">待分析</div>
+        </section>
+
+        <section class="source-grid" id="source-grid">
+          <article>
+            <span>股價來源</span>
+            <strong id="quote-source">Yahoo Finance</strong>
+            <p id="quote-time">股價更新時間：--</p>
+          </article>
+          <article>
+            <span>財報來源</span>
+            <strong id="financial-source">MOPS / TWSE OpenAPI</strong>
+            <p id="financial-time">財報季度：--</p>
+          </article>
+          <article>
+            <span>月營收來源</span>
+            <strong id="revenue-source">MOPS / TWSE OpenAPI</strong>
+            <p id="revenue-time">月營收月份：--</p>
+          </article>
+          <article>
+            <span>查核來源</span>
+            <strong>Google Finance</strong>
+            <p><a id="google-link" href="#" target="_blank" rel="noreferrer">開啟查核連結</a></p>
+          </article>
+        </section>
+
+        <section class="panel" id="chips">
+          <div class="panel-title">
+            <div>
+              <p class="eyebrow">Free Plan Chips</p>
+              <h3>Free 籌碼 5 / 20 / 60 日</h3>
+            </div>
+            <span class="chip-source" id="chip-source">資料來源：FinMind Free datasets</span>
+          </div>
+          <div class="chip-status" id="chip-status">等待查詢 Free 籌碼資料</div>
+          <div class="chip-tabs" role="tablist" aria-label="Free 籌碼區間">
+            <button type="button" class="active" data-chip-window="5">近 5 日</button>
+            <button type="button" data-chip-window="20">近 20 日</button>
+            <button type="button" data-chip-window="60">近 60 日</button>
+          </div>
+          <div class="chip-grid">
+            <article>
+              <h4>偏多籌碼</h4>
+              <div class="chip-list" id="chip-buy-list"></div>
+            </article>
+            <article>
+              <h4>偏空籌碼</h4>
+              <div class="chip-list" id="chip-sell-list"></div>
+            </article>
+          </div>
+          <div class="manual-chip-panel">
+            <div class="manual-chip-head">
+              <div>
+                <strong>使用者補充：券商分點與分點均價（5 / 10 / 20）</strong>
+                <p>上方固定呈現 FinMind Free 串接資料。若你另外有券商分點截圖或文字資料，可在此補充，AI 報告會合併判讀。</p>
+              </div>
+              <div class="mode-group" role="radiogroup" aria-label="分點資料輸入方式">
+                <label><input type="radio" name="chip-input-mode" value="none" checked /> 不使用</label>
+                <label><input type="radio" name="chip-input-mode" value="manual" /> 手動輸入</label>
+                <label><input type="radio" name="chip-input-mode" value="screenshot" /> 截圖貼入 OCR</label>
+              </div>
+            </div>
+            <div class="manual-chip-body hidden" id="manual-chip-body">
+              <textarea id="manual-chip-text" rows="5" placeholder="例：近 5 日，元大台北買超 1,200 張，均價 1,310；凱基台北賣超 800 張，均價 1,345。近 20 日外資分點偏買、投信延續買超。"></textarea>
+              <div class="paste-zone hidden" id="chip-paste-zone" tabindex="0">
+                <strong>貼上分點截圖並辨識文字</strong>
+                <span>點這裡後按 Ctrl + V，或選擇圖片檔。系統會嘗試 OCR 辨識截圖文字，並自動填入上方文字框。</span>
+                <input id="chip-image-input" type="file" accept="image/*" />
+                <div class="ocr-status" id="chip-ocr-status">尚未貼入截圖。</div>
+                <div class="image-preview" id="chip-image-preview"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="editor-panel">
+          <div class="panel-title">
+            <div>
+              <p class="eyebrow">Scenario Input</p>
+              <h3>資料覆寫與情境測試</h3>
+            </div>
+            <button type="button" id="reset-btn" class="ghost-btn">重新抓取</button>
+          </div>
+          <div class="input-grid">
+            <label>股價<input id="price" type="number" step="0.01" /></label>
+            <label>P/B<input id="pb" type="number" step="0.01" /></label>
+            <label>P/E<input id="pe" type="number" step="0.1" /></label>
+            <label>ROE %<input id="roe" type="number" step="0.1" /></label>
+            <label>殖利率 %<input id="yield" type="number" step="0.1" /></label>
+            <label>FCF<input id="fcf" type="number" step="1" /></label>
+            <label>5MA<input id="ma5" type="number" step="0.01" /></label>
+            <label>10MA<input id="ma10" type="number" step="0.01" /></label>
+            <label>20MA<input id="ma20" type="number" step="0.01" /></label>
+            <label>60MA<input id="ma60" type="number" step="0.01" /></label>
+            <label>營收 YoY %<input id="revenueYoy" type="number" step="0.1" /></label>
+            <label>負債比 %<input id="debtRatio" type="number" step="0.1" /></label>
+          </div>
+        </section>
+
+        <section class="kpi-grid" id="fundamental">
+          <article><span>P/B 估值</span><strong id="pb-score">--</strong><p id="pb-note"></p></article>
+          <article><span>ROE 體質</span><strong id="roe-score">--</strong><p id="roe-note"></p></article>
+          <article><span>FCF 照妖鏡</span><strong id="fcf-score">--</strong><p id="fcf-note"></p></article>
+          <article><span>技術生命線</span><strong id="trend-score">--</strong><p id="trend-note"></p></article>
+        </section>
+
+        <section class="content-grid">
+          <article class="panel">
+            <div class="panel-title">
+              <div>
+                <p class="eyebrow">Fundamental Check</p>
+                <h3>財報健檢</h3>
+              </div>
+            </div>
+            <table class="diagnosis-table">
+              <thead>
+                <tr>
+                  <th>評估面向</th>
+                  <th>重點觀察項目</th>
+                  <th>現況摘要</th>
+                  <th>診斷</th>
+                </tr>
+              </thead>
+              <tbody id="fundamental-table"></tbody>
+            </table>
+          </article>
+
+          <article class="panel" id="technical">
+            <div class="panel-title">
+              <div>
+                <p class="eyebrow">Moving Average Map</p>
+                <h3>均線買賣點</h3>
+              </div>
+            </div>
+            <div class="ma-chart" id="ma-chart"></div>
+            <div class="strategy-grid">
+              <div><span>空手者</span><p id="cash-strategy"></p></div>
+              <div><span>持有者</span><p id="holder-strategy"></p></div>
+              <div><span>停損警戒</span><p id="risk-strategy"></p></div>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel" id="report">
+          <div class="panel-title">
+            <div>
+              <p class="eyebrow">AI Report Draft</p>
+              <h3>AI 投資分析報告</h3>
+            </div>
+            <button type="button" id="copy-report" class="ghost-btn">複製報告</button>
+          </div>
+          <div class="report-box" id="ai-report"></div>
+        </section>
+
+        <footer>
+          本工具僅作研究與決策輔助，不構成個人化投資建議。所有分析必須搭配資料來源與更新時間判讀。
+        </footer>
+      </main>
+    </div>
+    <script src="app.js?v=20260511-firebase"></script>
+  </body>
+</html>

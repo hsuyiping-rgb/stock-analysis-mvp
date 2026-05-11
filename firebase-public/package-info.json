@@ -1,0 +1,11 @@
+{
+  "name": "stock-analysis-mvp",
+  "title": "股票分析",
+  "packagedAt": "2026-05-11T20:05:00+08:00",
+  "firebaseProjectId": "teaching-3b748",
+  "notes": [
+    "Firebase Hosting package contains static frontend files only.",
+    "Live quote, financial, chip and OCR-enhanced analysis currently require the local Node backend at http://127.0.0.1:8787.",
+    "Move server.js API routes to Cloud Functions or another backend before relying on hosted production data calls."
+  ]
+}

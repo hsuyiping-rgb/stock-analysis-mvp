@@ -1,0 +1,15 @@
+{
+  "name": "stock-value-timing-mvp",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "parquetjs-lite": "^0.10.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
