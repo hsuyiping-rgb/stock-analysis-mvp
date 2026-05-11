@@ -871,6 +871,11 @@ async function serveStatic(pathname, response) {
 }
 
 export async function handleRequest(request, response, options = {}) {
+  response.setHeader("Access-Control-Allow-Origin", "*");
+  response.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  if (request.method === "OPTIONS") { response.writeHead(204); response.end(); return; }
+
   try {
     const url = new URL(request.url, `http://${request.headers.host}`);
     const symbol = decodeURIComponent(url.pathname.split("/").pop() || "").trim().toUpperCase();
