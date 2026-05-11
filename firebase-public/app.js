@@ -7,7 +7,7 @@ const FALLBACKS = {
 
 const FIELDS = ["price", "pb", "pe", "roe", "yield", "fcf", "ma5", "ma10", "ma20", "ma60", "revenueYoy", "debtRatio"];
 const $ = (id) => document.getElementById(id);
-const API_ORIGIN = window.location.protocol === "file:" ? "http://127.0.0.1:8787" : "";
+const API_ORIGIN = window.location.protocol === "file:" ? "http://127.0.0.1:8787" : "https://stock-analysis-mvp-20j4.onrender.com";
 let currentStock = structuredClone(FALLBACKS["2357"]);
 let currentMeta = {};
 let selectedChipWindow = "5";

@@ -12,6 +12,7 @@
     }
   ],
   "hosting": {
+    "site": "stock-analysis-mvp",
     "public": "firebase-public",
     "ignore": [
       "firebase.json",
@@ -30,13 +31,6 @@
       }
     ],
     "rewrites": [
-      {
-        "source": "/api/**",
-        "function": {
-          "functionId": "api",
-          "region": "asia-east1"
-        }
-      },
       {
         "source": "**",
         "destination": "/index.html"
