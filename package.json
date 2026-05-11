@@ -7,7 +7,7 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "parquetjs-lite": "^0.10.2"
+    "parquetjs-lite": "^0.8.7"
   },
   "engines": {
     "node": ">=18"
