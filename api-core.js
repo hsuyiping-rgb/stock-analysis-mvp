@@ -29,6 +29,12 @@ const INCOME_ENDPOINTS = [
   "t187ap06_L_fh",
   "t187ap06_L_ins",
   "t187ap06_L_mim",
+  "t187ap06_O_ci",
+  "t187ap06_O_basi",
+  "t187ap06_O_bd",
+  "t187ap06_O_fh",
+  "t187ap06_O_ins",
+  "t187ap06_O_mim",
   "t187ap06_X_ci",
   "t187ap06_X_basi",
   "t187ap06_X_bd",
@@ -43,6 +49,12 @@ const BALANCE_ENDPOINTS = [
   "t187ap07_L_fh",
   "t187ap07_L_ins",
   "t187ap07_L_mim",
+  "t187ap07_O_ci",
+  "t187ap07_O_basi",
+  "t187ap07_O_bd",
+  "t187ap07_O_fh",
+  "t187ap07_O_ins",
+  "t187ap07_O_mim",
   "t187ap07_X_ci",
   "t187ap07_X_basi",
   "t187ap07_X_bd",
@@ -64,10 +76,6 @@ async function readLocalConfig() {
 
 function isTaiwanSymbol(symbol) {
   return /^\d{4,6}$/.test(symbol);
-}
-
-function yahooSymbol(symbol) {
-  return isTaiwanSymbol(symbol) ? `${symbol}.TW` : symbol.toUpperCase();
 }
 
 function googleFinanceUrl(symbol) {
@@ -566,27 +574,22 @@ function stripHtml(value) {
     .trim();
 }
 
-async function fetchYahooQuote(rawSymbol) {
-  const symbol = rawSymbol.trim().toUpperCase();
-  const ySymbol = yahooSymbol(symbol);
+async function _fetchYahooChart(ySymbol) {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ySymbol)}?range=6mo&interval=1d`;
   const json = await fetchJson(url, 60_000);
   const result = json.chart?.result?.[0];
   if (!result) throw new Error(json.chart?.error?.description || "Yahoo returned no chart data");
-
   const meta = result.meta || {};
   const quote = result.indicators?.quote?.[0] || {};
   const closes = (quote.close || []).filter((value) => Number.isFinite(value));
   const lastClose = closes.at(-1) ?? meta.regularMarketPrice;
   const previousClose = closes.at(-2) ?? meta.chartPreviousClose;
-
   return {
     ok: true,
     provider: "Yahoo Finance",
     url,
     symbol: ySymbol,
-    name: meta.longName || meta.shortName || symbol,
-    market: isTaiwanSymbol(symbol) ? "台股" : "美股",
+    name: meta.longName || meta.shortName || ySymbol,
     price: round(meta.regularMarketPrice ?? lastClose),
     changePct: previousClose ? round(((lastClose - previousClose) / previousClose) * 100, 2) : null,
     volume: quote.volume?.at(-1) || meta.regularMarketVolume || null,
@@ -599,6 +602,24 @@ async function fetchYahooQuote(rawSymbol) {
     ma60: movingAverage(closes, 60),
     closeCount: closes.length
   };
+}
+
+async function fetchYahooQuote(rawSymbol) {
+  const symbol = rawSymbol.trim().toUpperCase();
+
+  if (isTaiwanSymbol(symbol)) {
+    // 先試上市 (.TW)，若無股價則試上櫃 (.TWO)
+    const twData = await _fetchYahooChart(`${symbol}.TW`).catch(() => null);
+    if (twData?.price) return { ...twData, market: "台股上市" };
+
+    const twoData = await _fetchYahooChart(`${symbol}.TWO`).catch(() => null);
+    if (twoData?.price) return { ...twoData, market: "台股上櫃" };
+
+    // 兩者都失敗，重拋 .TW 的錯誤
+    return _fetchYahooChart(`${symbol}.TW`).then(d => ({ ...d, market: "台股" }));
+  }
+
+  return _fetchYahooChart(symbol).then(d => ({ ...d, market: "美股" }));
 }
 
 async function fetchGoogleFinance(rawSymbol) {
