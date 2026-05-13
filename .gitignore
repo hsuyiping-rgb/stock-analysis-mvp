@@ -4,6 +4,7 @@ dist/
 firebase-debug.log
 .firebase/
 .claude/
+reports/
 
 # Google Drive shortcut files
 *.gdoc
