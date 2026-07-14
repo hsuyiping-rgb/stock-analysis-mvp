@@ -5,6 +5,7 @@ firebase-debug.log
 .firebase/
 .claude/
 reports/
+data/etf_holdings/logs/
 
 # Google Drive shortcut files
 *.gdoc
