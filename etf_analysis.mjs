@@ -40,7 +40,8 @@ async function main() {
   const rebalance = buildRebalance(byEtf);
   const overweight = buildOverweight(byEtf);
 
-  printSummary({ latestDate, byEtf, consensus, rebalance, overweight });
+  const summaryText = buildSummaryText({ latestDate, byEtf, consensus, rebalance, overweight });
+  console.log(summaryText);
 
   await mkdir(REPORT_DIR, { recursive: true });
   const html = renderHtml({ latestDate, byEtf, consensus, rebalance, overweight });
@@ -48,6 +49,8 @@ async function main() {
   const latestPath = join(REPORT_DIR, "etf-analysis-latest.html");
   await writeFile(datedPath, html, "utf8");
   await writeFile(latestPath, html, "utf8");
+  // 純文字摘要，供每日 email 內文使用（send_etf_report.ps1 讀取）。
+  await writeFile(join(REPORT_DIR, "etf-analysis-summary.txt"), summaryText, "utf8");
   console.log(`\n報告已產生：${datedPath}`);
 }
 
@@ -213,38 +216,44 @@ function buildOverweight(byEtf) {
   return { benchmarkDate: benchmark.tranDate, totalActive, overweight, underweight };
 }
 
-// ---- 輸出：console ----
+// ---- 輸出：純文字摘要（console 與 email 內文共用）----
 
-function printSummary({ latestDate, byEtf, consensus, rebalance, overweight }) {
+function buildSummaryText({ latestDate, byEtf, consensus, rebalance, overweight }) {
   const actives = activeEtfs(byEtf).length;
-  console.log(`\n===== ETF 持股分析（最新資料日 ${latestDate}）=====`);
-  console.log(`納入純台股主動式 ETF：${actives} 檔\n`);
+  const lines = [];
+  lines.push(`===== ETF 持股分析（最新資料日 ${latestDate}）=====`);
+  lines.push(`納入純台股主動式 ETF：${actives} 檔`);
+  lines.push("");
 
-  console.log("── 共識持股 TOP 10（被最多檔主動式 ETF 持有）──");
+  lines.push("── 共識持股 TOP 10（被最多檔主動式 ETF 持有）──");
   for (const row of consensus.rows.slice(0, 10)) {
-    console.log(`  ${row.code} ${trunc(row.name, 6)}  ${row.holders}/${consensus.totalActive} 檔  平均權重 ${row.avgWeight.toFixed(2)}%`);
+    lines.push(`  ${row.code} ${trunc(row.name, 6)}  ${row.holders}/${consensus.totalActive} 檔  平均權重 ${row.avgWeight.toFixed(2)}%`);
   }
 
-  console.log("\n── 共識加碼（最新兩交易日，最多檔同向買進）──");
+  lines.push("");
+  lines.push("── 共識加碼（最新兩交易日，最多檔同向買進）──");
   const buys = rebalance.consensusMoves.filter((m) => m.net > 0).slice(0, 8);
-  if (!buys.length) console.log("  （尚無足夠歷史，或無明顯共識加碼）");
+  if (!buys.length) lines.push("  （尚無足夠歷史，或無明顯共識加碼）");
   for (const m of buys) {
-    console.log(`  ${m.code} ${trunc(m.name, 6)}  買進 ${m.buyers} 檔${m.new ? `（含建倉 ${m.new}）` : ""}｜賣出 ${m.sellers} 檔`);
+    lines.push(`  ${m.code} ${trunc(m.name, 6)}  買進 ${m.buyers} 檔${m.new ? `（含建倉 ${m.new}）` : ""}｜賣出 ${m.sellers} 檔`);
   }
 
-  console.log("\n── 共識減碼 ──");
+  lines.push("");
+  lines.push("── 共識減碼 ──");
   const sells = rebalance.consensusMoves.filter((m) => m.net < 0).slice(0, 6);
-  if (!sells.length) console.log("  （無明顯共識減碼）");
+  if (!sells.length) lines.push("  （無明顯共識減碼）");
   for (const m of sells) {
-    console.log(`  ${m.code} ${trunc(m.name, 6)}  賣出 ${m.sellers} 檔${m.exit ? `（含出清 ${m.exit}）` : ""}｜買進 ${m.buyers} 檔`);
+    lines.push(`  ${m.code} ${trunc(m.name, 6)}  賣出 ${m.sellers} 檔${m.exit ? `（含出清 ${m.exit}）` : ""}｜買進 ${m.buyers} 檔`);
   }
 
   if (!overweight.benchmarkMissing) {
-    console.log("\n── 主動經理人超配 TOP 8（相對 0050 大盤加碼）──");
+    lines.push("");
+    lines.push("── 主動經理人超配 TOP 8（相對 0050 大盤加碼）──");
     for (const row of overweight.overweight.slice(0, 8)) {
-      console.log(`  ${row.code} ${trunc(row.name, 6)}  主動均 ${row.activeAvg.toFixed(2)}%  vs 0050 ${row.bench.toFixed(2)}%  →  +${row.diff.toFixed(2)}%`);
+      lines.push(`  ${row.code} ${trunc(row.name, 6)}  主動均 ${row.activeAvg.toFixed(2)}%  vs 0050 ${row.bench.toFixed(2)}%  →  +${row.diff.toFixed(2)}%`);
     }
   }
+  return lines.join("\n");
 }
 
 // ---- 輸出：HTML ----
