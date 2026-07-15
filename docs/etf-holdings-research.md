@@ -106,6 +106,28 @@
   也可直接解析頁面 `window.__NUXT__`（備援）
 - 注意：00990A 為海外持股（AMD、NVDA 等美股），資料日 T+1
 
+### 復華投信（00991A）— 已完成，見 `etf_holdings.mjs`
+
+- 端點：`GET https://www.fhtrust.com.tw/api/assets?fundID=ETF23&qDate=2026/07/15`
+  - `fundID`：投信內部代碼，00991A=`ETF23`（對照 `/api/fundList?ec001=3`；
+    詳情頁 URL `/ETF/etf_detail/ETF23`，回應 `result[0].etf002` 為股票代號）
+  - `qDate`：西元 `YYYY/MM/DD`，支援查歷史
+  - 免 cookie 免 token
+- 回應：`result[0]`（`dDate` 持股基準日、`pcf_Fundpnav` NAV、`pcf_FundNav` 淨資產）、
+  `result[0].detail[]` 中 `ftype="股票"` 的列
+  （`stockid`、`stockname`、`qshare` 股數、`mvalue` 市值、`prate_addaccint` 權重含 % 字串）
+- **關鍵陷阱**：`/api/ETFPcf`（trade_list 申購買回清單頁）對**主動式基金**的持股明細
+  是空的（`result` 陣列長度 0），只有被動式指數 ETF 才有籃子；主動式持股一定要走
+  `/api/assets`（基金詳情頁）。逆向時若只看 trade_list 會誤判為無資料。
+
+### 台新投信（00986A、00987A）— 略過
+
+台新兩檔名為「龍頭成長／優勢成長」，實際是**全球型**主動式 ETF（持台積電外，
+多為美股 Alphabet/NVDA、日股村田/安川等），非純台股；且只能抓當日、不支援回補。
+與台股選股共識目標關聯低，暫不納入。端點為傳統伺服器渲染 HTML：
+`GET https://www.tsit.com.tw/ETF/Home/Pcf/{代號}`（持股在 `<table>` 需解析），
+日後若要納入全球型分析可再處理。
+
 ### 待逆向的投信 PCF 頁面
 
 | 投信 | PCF 頁面 | 備註 |
@@ -133,6 +155,29 @@ node etf_holdings.mjs --date 115/07/10   # 指定公告日（民國年）
 ```
 
 產出：`data/etf_holdings/{資料日}/{代號}.json`（原始快照）與 `.csv`（精簡表）。
+每檔快照含 `category` 欄位：`tw-active`（純台股主動式）／`tw-passive`（被動式對照）／
+`global-active`（海外持股主動式）。
+
+## 分析
+
+```powershell
+node etf_analysis.mjs   # 讀所有快照，產生共識／增減碼／超配報告
+```
+
+`etf_analysis.mjs` 讀 `data/etf_holdings/` 全部快照，只納入 `category=tw-active` 的
+主動式 ETF（海外型 00983A/00990A 與被動 0050/0056 排除，0050 另作超配基準），產生三張表：
+
+1. **共識持股**：被最多檔主動式 ETF 同時持有（權重 ≥ 0.1%）的個股排行。
+2. **增減碼**：各 ETF 最新兩交易日的股數變化，跨 ETF 統計同向買賣家數；
+   「建倉」＝象徵性部位轉實質、「出清」＝實質歸零。需同一 ETF 至少兩個交易日。
+3. **超配／低配**：主動式群體平均權重（分母為全體主動式檔數）減 0050 市值權重。
+
+輸出 console 摘要 + `reports/etf-analysis-{最新日}.html` 與 `etf-analysis-latest.html`。
+`reports/` 已 gitignore。象徵性門檻 0.1%、增減碼門檻 5%（改參數見腳本頂部常數）。
+
+歷史回補：支援歷史的投信（統一／群益／野村／中信／復華）可用
+`for d in 01 02 ...; do node etf_holdings.mjs --date 115/07/$d; done` 批次補齊，
+diff 才有多日基礎。
 
 排程：已註冊 Windows 工作排程器「**ETF持股每日快照**」，
 週一至週五 18:00 執行 `run_etf_holdings.ps1`（投信約 16:20–17:50 陸續上傳完畢），

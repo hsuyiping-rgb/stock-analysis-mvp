@@ -11,22 +11,24 @@ const OPTIONS = parseArgs(process.argv.slice(2));
 const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36";
 
 // fundCode／fundId 是各投信內部代碼，與股票代號不同，逆向方式見 docs/etf-holdings-research.md。
+// category：tw-active＝純台股主動式（共識與增減碼分析主體）；
+// tw-passive＝被動式（做大盤權重對照基準，不列入增減碼）；
+// global-active＝海外持股主動式（代號非台股格式，排除於台股共識之外）。
 const ETF_LIST = [
-  { stockNo: "00981A", name: "主動統一台股增長", issuer: "統一投信", fetcher: fetchUniPcf, fundCode: "49YTW" },
-  { stockNo: "00403A", name: "主動統一升級50", issuer: "統一投信", fetcher: fetchUniPcf, fundCode: "63YTW" },
-  { stockNo: "00982A", name: "主動群益台灣強棒", issuer: "群益投信", fetcher: fetchCapitalPcf, fundCode: "399" },
-  { stockNo: "00992A", name: "主動群益科技創新", issuer: "群益投信", fetcher: fetchCapitalPcf, fundCode: "500" },
-  { stockNo: "00980A", name: "主動野村臺灣優選", issuer: "野村投信", fetcher: fetchNomuraPcf, fundCode: "00980A" },
-  { stockNo: "00985A", name: "主動野村台灣50", issuer: "野村投信", fetcher: fetchNomuraPcf, fundCode: "00985A" },
-  { stockNo: "00999A", name: "主動野村臺灣高息", issuer: "野村投信", fetcher: fetchNomuraPcf, fundCode: "00999A" },
-  // 00983A 實際持股為美股（ARK 創新策略），做台股共識分析時需依代號格式過濾。
-  { stockNo: "00983A", name: "主動中信ARK創新", issuer: "中信投信", fetcher: fetchCtbcPcf, fundCode: "E0034" },
-  { stockNo: "00995A", name: "主動中信台灣卓越", issuer: "中信投信", fetcher: fetchCtbcPcf, fundCode: "E0036" },
-  { stockNo: "00406A", name: "主動中信台灣收益", issuer: "中信投信", fetcher: fetchCtbcPcf, fundCode: "E0038" },
-  // 元大：0050/0056 為被動式（成分變動慢，但權重可做大盤對照基準）；00990A 為海外主動式。
-  { stockNo: "0050", name: "元大台灣50", issuer: "元大投信", fetcher: fetchYuantaPcf, fundCode: "0050" },
-  { stockNo: "0056", name: "元大高股息", issuer: "元大投信", fetcher: fetchYuantaPcf, fundCode: "0056" },
-  { stockNo: "00990A", name: "主動元大AI新經濟", issuer: "元大投信", fetcher: fetchYuantaPcf, fundCode: "00990A" }
+  { stockNo: "00981A", name: "主動統一台股增長", issuer: "統一投信", category: "tw-active", fetcher: fetchUniPcf, fundCode: "49YTW" },
+  { stockNo: "00403A", name: "主動統一升級50", issuer: "統一投信", category: "tw-active", fetcher: fetchUniPcf, fundCode: "63YTW" },
+  { stockNo: "00982A", name: "主動群益台灣強棒", issuer: "群益投信", category: "tw-active", fetcher: fetchCapitalPcf, fundCode: "399" },
+  { stockNo: "00992A", name: "主動群益科技創新", issuer: "群益投信", category: "tw-active", fetcher: fetchCapitalPcf, fundCode: "500" },
+  { stockNo: "00980A", name: "主動野村臺灣優選", issuer: "野村投信", category: "tw-active", fetcher: fetchNomuraPcf, fundCode: "00980A" },
+  { stockNo: "00985A", name: "主動野村台灣50", issuer: "野村投信", category: "tw-active", fetcher: fetchNomuraPcf, fundCode: "00985A" },
+  { stockNo: "00999A", name: "主動野村臺灣高息", issuer: "野村投信", category: "tw-active", fetcher: fetchNomuraPcf, fundCode: "00999A" },
+  { stockNo: "00983A", name: "主動中信ARK創新", issuer: "中信投信", category: "global-active", fetcher: fetchCtbcPcf, fundCode: "E0034" },
+  { stockNo: "00995A", name: "主動中信台灣卓越", issuer: "中信投信", category: "tw-active", fetcher: fetchCtbcPcf, fundCode: "E0036" },
+  { stockNo: "00406A", name: "主動中信台灣收益", issuer: "中信投信", category: "tw-active", fetcher: fetchCtbcPcf, fundCode: "E0038" },
+  { stockNo: "0050", name: "元大台灣50", issuer: "元大投信", category: "tw-passive", fetcher: fetchYuantaPcf, fundCode: "0050" },
+  { stockNo: "0056", name: "元大高股息", issuer: "元大投信", category: "tw-passive", fetcher: fetchYuantaPcf, fundCode: "0056" },
+  { stockNo: "00990A", name: "主動元大AI新經濟", issuer: "元大投信", category: "global-active", fetcher: fetchYuantaPcf, fundCode: "00990A" },
+  { stockNo: "00991A", name: "主動復華未來50", issuer: "復華投信", category: "tw-active", fetcher: fetchFhtrustPcf, fundCode: "ETF23" }
 ];
 
 const cookieCache = new Map();
@@ -41,6 +43,7 @@ async function main() {
   for (const etf of ETF_LIST) {
     try {
       const snapshot = await etf.fetcher(etf);
+      snapshot.category = etf.category;
       results.push(snapshot);
       await saveSnapshot(snapshot);
       console.log(`${etf.stockNo} ${etf.name}：持股 ${snapshot.stocks.length} 檔（資料日 ${snapshot.tranDate}）`);
@@ -305,6 +308,43 @@ async function fetchYuantaPcf(etf) {
       shares: row.qty,
       amount: null,
       weight: row.weights
+    })))
+  };
+}
+
+// ---- 復華投信（fhtrust.com.tw，開放 GET、免 cookie） ----
+// 注意：主動式持股在 /api/assets（詳情頁），不在 /api/ETFPcf（trade_list）——
+// 後者對主動式基金的持股明細是空的，只有被動式指數 ETF 才有籃子。
+
+async function fetchFhtrustPcf(etf) {
+  // qDate 用西元 YYYY/MM/DD，支援查歷史。
+  const qDate = OPTIONS.date
+    ? rocToIso(OPTIONS.date).replaceAll("-", "/")
+    : new Date().toLocaleDateString("zh-TW", { timeZone: "Asia/Taipei", year: "numeric", month: "2-digit", day: "2-digit" }).replaceAll("-", "/");
+  const response = await fetch(`https://www.fhtrust.com.tw/api/assets?fundID=${etf.fundCode}&qDate=${qDate}`, {
+    headers: { "User-Agent": USER_AGENT }
+  });
+  const payload = await response.json();
+  const record = payload.result?.[0];
+  const stockRows = (record?.detail || []).filter((row) => row.ftype === "股票");
+  if (!record || !stockRows.length) {
+    throw new Error(`無股票明細（HTTP ${response.status}，qDate ${qDate}）`);
+  }
+  return {
+    stockNo: etf.stockNo,
+    name: etf.name,
+    issuer: etf.issuer,
+    tranDate: String(record.dDate || "").replaceAll("/", "-"),
+    postDate: "",
+    fetchedAt: new Date().toISOString(),
+    nav: parseNumber(record.pcf_Fundpnav),
+    fundNetAsset: parseNumber(record.pcf_FundNav),
+    stocks: normalizeStocks(stockRows.map((row) => ({
+      code: row.stockid,
+      name: row.stockname,
+      shares: parseNumber(row.qshare),
+      amount: parseNumber(row.mvalue),
+      weight: parseNumber(String(row.prate_addaccint).replace("%", ""))
     })))
   };
 }

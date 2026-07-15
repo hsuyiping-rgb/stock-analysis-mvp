@@ -2,395 +2,388 @@
   "stockNo": "00995A",
   "name": "主動中信台灣卓越",
   "issuer": "中信投信",
-  "tranDate": "2026-07-14",
+  "tranDate": "2026-07-09",
   "postDate": "",
-  "fetchedAt": "2026-07-15T11:36:30.405Z",
-  "nav": 16.48,
-  "fundNetAsset": 4886110516,
+  "fetchedAt": "2026-07-15T11:36:21.543Z",
+  "nav": 17.32,
+  "fundNetAsset": 5152200477,
   "stocks": [
     {
       "code": "2330",
       "name": "台灣積體電路製造",
       "shares": 188000,
-      "amount": 454960000,
-      "weight": 9.34
+      "amount": 454020000,
+      "weight": 8.81
     },
     {
       "code": "2383",
       "name": "台光電子材料",
       "shares": 77000,
-      "amount": 382690000,
-      "weight": 7.83
+      "amount": 407715000,
+      "weight": 7.91
     },
     {
       "code": "2454",
       "name": "聯發科技",
       "shares": 74000,
-      "amount": 270840000,
-      "weight": 5.54
-    },
-    {
-      "code": "2345",
-      "name": "智邦科技",
-      "shares": 110000,
-      "amount": 250800000,
-      "weight": 5.13
+      "amount": 290450000,
+      "weight": 5.64
     },
     {
       "code": "2327",
       "name": "國巨*",
       "shares": 303000,
-      "amount": 235734000,
-      "weight": 4.82
+      "amount": 272700000,
+      "weight": 5.29
+    },
+    {
+      "code": "2345",
+      "name": "智邦科技",
+      "shares": 110000,
+      "amount": 271700000,
+      "weight": 5.27
     },
     {
       "code": "6223",
       "name": "旺矽科技",
       "shares": 36000,
-      "amount": 228240000,
-      "weight": 4.67
-    },
-    {
-      "code": "8046",
-      "name": "南亞電路板",
-      "shares": 170000,
-      "amount": 219300000,
-      "weight": 4.49
+      "amount": 254880000,
+      "weight": 4.95
     },
     {
       "code": "6669",
       "name": "緯穎科技服務",
       "shares": 43000,
-      "amount": 210915000,
-      "weight": 4.32
+      "amount": 216720000,
+      "weight": 4.21
+    },
+    {
+      "code": "8046",
+      "name": "南亞電路板",
+      "shares": 170000,
+      "amount": 206550000,
+      "weight": 4.01
     },
     {
       "code": "3037",
       "name": "欣興電子",
       "shares": 232000,
-      "amount": 202768000,
-      "weight": 4.15
-    },
-    {
-      "code": "2308",
-      "name": "台達電子工業",
-      "shares": 98000,
-      "amount": 181790000,
-      "weight": 3.72
+      "amount": 203000000,
+      "weight": 3.94
     },
     {
       "code": "3017",
       "name": "奇鋐科技",
       "shares": 80000,
-      "amount": 169600000,
-      "weight": 3.47
+      "amount": 188000000,
+      "weight": 3.65
+    },
+    {
+      "code": "2308",
+      "name": "台達電子工業",
+      "shares": 98000,
+      "amount": 184240000,
+      "weight": 3.58
     },
     {
       "code": "2368",
       "name": "金像電子",
       "shares": 135000,
-      "amount": 137025000,
-      "weight": 2.8
+      "amount": 145125000,
+      "weight": 2.82
     },
     {
       "code": "3711",
       "name": "日月光投資控股",
       "shares": 207000,
-      "amount": 132687000,
+      "amount": 140139000,
       "weight": 2.72
     },
     {
       "code": "3665",
       "name": "貿聯控股",
       "shares": 71000,
-      "amount": 126025000,
-      "weight": 2.58
+      "amount": 132415000,
+      "weight": 2.57
     },
     {
       "code": "5274",
       "name": "信驊科技",
       "shares": 8800,
-      "amount": 114268000,
-      "weight": 2.34
+      "amount": 120252000,
+      "weight": 2.33
     },
     {
       "code": "2303",
       "name": "聯華電子",
       "shares": 700000,
-      "amount": 105700000,
-      "weight": 2.16
-    },
-    {
-      "code": "7769",
-      "name": "鴻勁",
-      "shares": 16000,
-      "amount": 102320000,
-      "weight": 2.09
+      "amount": 109200000,
+      "weight": 2.12
     },
     {
       "code": "6274",
       "name": "台燿科技",
       "shares": 68000,
-      "amount": 94860000,
-      "weight": 1.94
+      "amount": 106760000,
+      "weight": 2.07
     },
     {
-      "code": "3653",
-      "name": "健策精密工業",
-      "shares": 30000,
-      "amount": 92100000,
-      "weight": 1.88
+      "code": "7769",
+      "name": "鴻勁",
+      "shares": 16000,
+      "amount": 106560000,
+      "weight": 2.07
     },
     {
       "code": "6515",
       "name": "穎崴科技",
       "shares": 13000,
-      "amount": 91520000,
+      "amount": 100945000,
+      "weight": 1.96
+    },
+    {
+      "code": "3653",
+      "name": "健策精密工業",
+      "shares": 30000,
+      "amount": 96150000,
       "weight": 1.87
     },
     {
       "code": "4958",
       "name": "臻鼎科技控股",
       "shares": 107000,
-      "amount": 67303000,
-      "weight": 1.38
+      "amount": 62916000,
+      "weight": 1.22
     },
     {
       "code": "2472",
       "name": "立隆電子工業",
       "shares": 162000,
-      "amount": 52002000,
-      "weight": 1.06
+      "amount": 60912000,
+      "weight": 1.18
     },
     {
       "code": "2360",
       "name": "致茂電子",
       "shares": 26000,
       "amount": 47320000,
-      "weight": 0.97
+      "weight": 0.92
     },
     {
       "code": "2344",
       "name": "華邦電子",
       "shares": 260000,
-      "amount": 42770000,
-      "weight": 0.88
+      "amount": 45890000,
+      "weight": 0.89
     },
     {
       "code": "8210",
       "name": "勤誠興業",
       "shares": 38000,
-      "amount": 42180000,
-      "weight": 0.86
+      "amount": 44650000,
+      "weight": 0.87
     },
     {
       "code": "8996",
       "name": "高力熱處理工業",
       "shares": 32000,
-      "amount": 37600000,
-      "weight": 0.77
+      "amount": 39360000,
+      "weight": 0.76
     },
     {
       "code": "3023",
       "name": "信邦電子",
       "shares": 113000,
-      "amount": 35538500,
-      "weight": 0.73
-    },
-    {
-      "code": "2885",
-      "name": "元大金融控股",
-      "shares": 493000,
-      "amount": 32883100,
-      "weight": 0.67
+      "amount": 36838000,
+      "weight": 0.71
     },
     {
       "code": "3044",
       "name": "健鼎科技",
       "shares": 78000,
-      "amount": 32877000,
-      "weight": 0.67
+      "amount": 34983000,
+      "weight": 0.68
+    },
+    {
+      "code": "2885",
+      "name": "元大金融控股",
+      "shares": 493000,
+      "amount": 33671900,
+      "weight": 0.65
     },
     {
       "code": "2455",
       "name": "全新光電科技",
       "shares": 101000,
-      "amount": 31764500,
+      "amount": 33380500,
       "weight": 0.65
     },
     {
       "code": "5289",
       "name": "宜鼎國際",
       "shares": 22000,
-      "amount": 31790000,
+      "amount": 33660000,
       "weight": 0.65
     },
     {
-      "code": "3189",
-      "name": "景碩科技",
-      "shares": 31000,
-      "amount": 24955000,
+      "code": "6147",
+      "name": "頎邦科技",
+      "shares": 120000,
+      "amount": 26040000,
       "weight": 0.51
-    },
-    {
-      "code": "7750",
-      "name": "新代",
-      "shares": 12000,
-      "amount": 24420000,
-      "weight": 0.5
     },
     {
       "code": "6187",
       "name": "萬潤科技",
       "shares": 24000,
-      "amount": 23640000,
-      "weight": 0.48
+      "amount": 25200000,
+      "weight": 0.49
     },
     {
       "code": "3264",
       "name": "欣銓科技",
       "shares": 107000,
-      "amount": 23272500,
+      "amount": 25145000,
+      "weight": 0.49
+    },
+    {
+      "code": "3189",
+      "name": "景碩科技",
+      "shares": 31000,
+      "amount": 24645000,
       "weight": 0.48
     },
     {
       "code": "6531",
       "name": "愛普科技",
       "shares": 27000,
-      "amount": 23166000,
-      "weight": 0.47
+      "amount": 24894000,
+      "weight": 0.48
     },
     {
-      "code": "6147",
-      "name": "頎邦科技",
-      "shares": 120000,
-      "amount": 22320000,
-      "weight": 0.46
-    },
-    {
-      "code": "2449",
-      "name": "京元電子",
-      "shares": 77000,
-      "amount": 22445500,
-      "weight": 0.46
+      "code": "7750",
+      "name": "新代",
+      "shares": 12000,
+      "amount": 24780000,
+      "weight": 0.48
     },
     {
       "code": "3105",
       "name": "穩懋半導體",
       "shares": 60000,
-      "amount": 22710000,
+      "amount": 24360000,
+      "weight": 0.47
+    },
+    {
+      "code": "2449",
+      "name": "京元電子",
+      "shares": 77000,
+      "amount": 23754500,
       "weight": 0.46
     },
     {
-      "code": "2313",
-      "name": "華通電腦",
-      "shares": 90000,
-      "amount": 20295000,
+      "code": "6510",
+      "name": "中華精測科技",
+      "shares": 8000,
+      "amount": 22840000,
+      "weight": 0.44
+    },
+    {
+      "code": "3443",
+      "name": "創意電子",
+      "shares": 5000,
+      "amount": 21700000,
       "weight": 0.42
     },
     {
       "code": "6438",
       "name": "迅得機械",
       "shares": 140000,
-      "amount": 20510000,
-      "weight": 0.42
-    },
-    {
-      "code": "3443",
-      "name": "創意電子",
-      "shares": 5000,
-      "amount": 20100000,
+      "amount": 21000000,
       "weight": 0.41
     },
     {
       "code": "5439",
       "name": "高技企業",
       "shares": 65180,
-      "amount": 19097740,
-      "weight": 0.39
+      "amount": 21216090,
+      "weight": 0.41
     },
     {
       "code": "8150",
       "name": "南茂科技",
       "shares": 180000,
-      "amount": 18720000,
-      "weight": 0.38
+      "amount": 21060000,
+      "weight": 0.41
+    },
+    {
+      "code": "2313",
+      "name": "華通電腦",
+      "shares": 90000,
+      "amount": 20070000,
+      "weight": 0.39
     },
     {
       "code": "6213",
       "name": "聯茂電子",
       "shares": 50000,
-      "amount": 17425000,
-      "weight": 0.36
-    },
-    {
-      "code": "2467",
-      "name": "志聖工業",
-      "shares": 27000,
-      "amount": 14472000,
-      "weight": 0.3
+      "amount": 19250000,
+      "weight": 0.37
     },
     {
       "code": "6139",
       "name": "亞翔工程",
       "shares": 17000,
-      "amount": 14178000,
+      "amount": 14875000,
+      "weight": 0.29
+    },
+    {
+      "code": "2467",
+      "name": "志聖工業",
+      "shares": 27000,
+      "amount": 15012000,
       "weight": 0.29
     },
     {
       "code": "5536",
       "name": "聖暉工程科技",
       "shares": 12000,
-      "amount": 13860000,
+      "amount": 14580000,
       "weight": 0.28
-    },
-    {
-      "code": "6510",
-      "name": "中華精測科技",
-      "shares": 5000,
-      "amount": 13500000,
-      "weight": 0.28
-    },
-    {
-      "code": "3211",
-      "name": "順達科技",
-      "shares": 30000,
-      "amount": 13200000,
-      "weight": 0.27
-    },
-    {
-      "code": "3167",
-      "name": "大量科技",
-      "shares": 15000,
-      "amount": 13050000,
-      "weight": 0.27
     },
     {
       "code": "6805",
       "name": "富世達股份有限公司",
       "shares": 9000,
-      "amount": 11880000,
-      "weight": 0.24
+      "amount": 13140000,
+      "weight": 0.26
+    },
+    {
+      "code": "3211",
+      "name": "順達科技",
+      "shares": 30000,
+      "amount": 13620000,
+      "weight": 0.26
+    },
+    {
+      "code": "3167",
+      "name": "大量科技",
+      "shares": 15000,
+      "amount": 11625000,
+      "weight": 0.23
     },
     {
       "code": "8358",
       "name": "金居開發",
       "shares": 20000,
-      "amount": 9200000,
-      "weight": 0.19
-    },
-    {
-      "code": "3026",
-      "name": "禾伸堂企業",
-      "shares": 8000,
-      "amount": 6520000,
-      "weight": 0.13
+      "amount": 10660000,
+      "weight": 0.21
     },
     {
       "code": "2404",
       "name": "漢唐集成",
       "shares": 5000,
-      "amount": 5925000,
+      "amount": 6075000,
       "weight": 0.12
     }
   ],
