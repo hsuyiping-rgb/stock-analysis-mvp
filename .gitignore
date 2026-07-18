@@ -6,6 +6,7 @@ firebase-debug.log
 .claude/
 reports/
 data/etf_holdings/logs/
+data/institutional/logs/
 
 # Google Drive shortcut files
 *.gdoc
@@ -21,4 +22,4 @@ data/etf_holdings/logs/
 # 資產報表 / 財報
 資產報表/
 2025財報/
-台股與美股波段操作教練/
+台股與美股波段操作教練
