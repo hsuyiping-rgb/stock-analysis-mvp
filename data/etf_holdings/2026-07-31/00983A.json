@@ -1,0 +1,314 @@
+{
+  "stockNo": "00983A",
+  "name": "主動中信ARK創新",
+  "issuer": "中信投信",
+  "tranDate": "2026-07-31",
+  "postDate": "",
+  "fetchedAt": "2026-08-03T12:18:11.077Z",
+  "nav": 11.06,
+  "fundNetAsset": 1102246196,
+  "stocks": [
+    {
+      "code": "TSLA US",
+      "name": "特斯拉公司",
+      "shares": 8370,
+      "amount": 2604827.7,
+      "weight": 7.64
+    },
+    {
+      "code": "SHOP US",
+      "name": "Shopify公司",
+      "shares": 18165,
+      "amount": 2128029.75,
+      "weight": 6.24
+    },
+    {
+      "code": "AMD US",
+      "name": "超微半導體公司",
+      "shares": 4322,
+      "amount": 2057920.3,
+      "weight": 6.03
+    },
+    {
+      "code": "TXG US",
+      "name": "10X Genomics Inc",
+      "shares": 42881,
+      "amount": 2026984.87,
+      "weight": 5.94
+    },
+    {
+      "code": "TWST US",
+      "name": "Twist Bioscience Corp",
+      "shares": 15930,
+      "amount": 1458391.5,
+      "weight": 4.28
+    },
+    {
+      "code": "ILMN US",
+      "name": "伊魯米納公司",
+      "shares": 6919,
+      "amount": 1419086.9,
+      "weight": 4.16
+    },
+    {
+      "code": "CRSP US",
+      "name": "CRISPR治療公司",
+      "shares": 28627,
+      "amount": 1373809.73,
+      "weight": 4.03
+    },
+    {
+      "code": "AMZN US",
+      "name": "亞馬遜公司",
+      "shares": 4709,
+      "amount": 1278870.22,
+      "weight": 3.75
+    },
+    {
+      "code": "HOOD US",
+      "name": "羅賓漢市場公司",
+      "shares": 14529,
+      "amount": 1257630.24,
+      "weight": 3.69
+    },
+    {
+      "code": "TSM US",
+      "name": "台積電",
+      "shares": 3035,
+      "amount": 1226898.75,
+      "weight": 3.6
+    },
+    {
+      "code": "TEM US",
+      "name": "Tempus AI Inc",
+      "shares": 23579,
+      "amount": 1034410.73,
+      "weight": 3.03
+    },
+    {
+      "code": "XYZ US",
+      "name": "布洛克公司",
+      "shares": 10275,
+      "amount": 834741,
+      "weight": 2.45
+    },
+    {
+      "code": "RBLX US",
+      "name": "Roblox公司",
+      "shares": 22616,
+      "amount": 805129.6,
+      "weight": 2.36
+    },
+    {
+      "code": "BEAM US",
+      "name": "光束治療公司",
+      "shares": 31605,
+      "amount": 806559.6,
+      "weight": 2.36
+    },
+    {
+      "code": "NTRA US",
+      "name": "那提拉公司",
+      "shares": 2977,
+      "amount": 797121.52,
+      "weight": 2.34
+    },
+    {
+      "code": "COIN US",
+      "name": "比特幣基地全球公司",
+      "shares": 4893,
+      "amount": 715650.18,
+      "weight": 2.1
+    },
+    {
+      "code": "CRCL US",
+      "name": "Circle Internet Group Inc",
+      "shares": 11344,
+      "amount": 710247.84,
+      "weight": 2.08
+    },
+    {
+      "code": "AVGO US",
+      "name": "博通公司",
+      "shares": 1761,
+      "amount": 685522.08,
+      "weight": 2.01
+    },
+    {
+      "code": "LLY US",
+      "name": "禮來公司",
+      "shares": 595,
+      "amount": 683559.8,
+      "weight": 2
+    },
+    {
+      "code": "GOOGL US",
+      "name": "Alphabet公司 Class A",
+      "shares": 1741,
+      "amount": 620022.33,
+      "weight": 1.82
+    },
+    {
+      "code": "SNOW US",
+      "name": "Snowflake公司",
+      "shares": 1745,
+      "amount": 511773.6,
+      "weight": 1.5
+    },
+    {
+      "code": "WGS US",
+      "name": "GeneDx控股公司",
+      "shares": 7621,
+      "amount": 496203.31,
+      "weight": 1.45
+    },
+    {
+      "code": "DE US",
+      "name": "迪爾",
+      "shares": 828,
+      "amount": 490730.76,
+      "weight": 1.44
+    },
+    {
+      "code": "GOOG US",
+      "name": "Alphabet公司 Class C",
+      "shares": 1323,
+      "amount": 471847.95,
+      "weight": 1.38
+    },
+    {
+      "code": "NTLA US",
+      "name": "英特利亞治療公司",
+      "shares": 40577,
+      "amount": 433362.36,
+      "weight": 1.27
+    },
+    {
+      "code": "META US",
+      "name": "Meta平台公司",
+      "shares": 773,
+      "amount": 430336.83,
+      "weight": 1.26
+    },
+    {
+      "code": "NVDA US",
+      "name": "輝達",
+      "shares": 1960,
+      "amount": 393470,
+      "weight": 1.15
+    },
+    {
+      "code": "VCYT US",
+      "name": "Veracyte公司",
+      "shares": 8293,
+      "amount": 384131.76,
+      "weight": 1.13
+    },
+    {
+      "code": "BLSH US",
+      "name": "Bullish",
+      "shares": 15322,
+      "amount": 333866.38,
+      "weight": 0.98
+    },
+    {
+      "code": "BMNR US",
+      "name": "BitMine Immersion Technologi",
+      "shares": 19200,
+      "amount": 331776,
+      "weight": 0.97
+    },
+    {
+      "code": "CRWV US",
+      "name": "CoreWeave Inc",
+      "shares": 3760,
+      "amount": 269855.2,
+      "weight": 0.79
+    },
+    {
+      "code": "SOFI US",
+      "name": "SoFi Technologies Inc",
+      "shares": 13816,
+      "amount": 225338.96,
+      "weight": 0.66
+    },
+    {
+      "code": "TER US",
+      "name": "泰瑞達公司",
+      "shares": 600,
+      "amount": 220614,
+      "weight": 0.65
+    },
+    {
+      "code": "CBRS US",
+      "name": "Cerebras Systems Inc",
+      "shares": 1098,
+      "amount": 218183.58,
+      "weight": 0.64
+    },
+    {
+      "code": "PLTR US",
+      "name": "帕蘭提爾科技公司",
+      "shares": 1403,
+      "amount": 172653.18,
+      "weight": 0.51
+    },
+    {
+      "code": "FIG US",
+      "name": "Figma Inc",
+      "shares": 6280,
+      "amount": 152729.6,
+      "weight": 0.45
+    },
+    {
+      "code": "CERS US",
+      "name": "Cerus公司",
+      "shares": 62549,
+      "amount": 134480.35,
+      "weight": 0.39
+    },
+    {
+      "code": "SPCX US",
+      "name": "太空探索科技公司",
+      "shares": 1071,
+      "amount": 116064.27,
+      "weight": 0.34
+    },
+    {
+      "code": "KTOS US",
+      "name": "克瑞拓斯安全防衛公司",
+      "shares": 2181,
+      "amount": 101634.6,
+      "weight": 0.3
+    },
+    {
+      "code": "ACHR US",
+      "name": "阿徹航空公司",
+      "shares": 22076,
+      "amount": 102432.64,
+      "weight": 0.3
+    },
+    {
+      "code": "RXRX US",
+      "name": "利可迅生技公司",
+      "shares": 33889,
+      "amount": 101667,
+      "weight": 0.3
+    },
+    {
+      "code": "XE US",
+      "name": "X-Energy Inc",
+      "shares": 2406,
+      "amount": 39241.86,
+      "weight": 0.12
+    },
+    {
+      "code": "BWXT US",
+      "name": "BWX科技股份有限公司",
+      "shares": 108,
+      "amount": 18219.6,
+      "weight": 0.05
+    }
+  ],
+  "category": "global-active"
+}
