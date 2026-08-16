@@ -26,6 +26,7 @@
 - [x] 階段四：三大法人熱門股 + 5/20/60 成本線研究管線
 - [x] 階段五：ETF 分析報告接入每日 email 自動寄送
 - [ ] 階段六：Firebase Cloud Functions 上線（**卡在 Blaze 方案未升級**）
+- [ ] 階段七：兩個每日排程搬到不關機的 Windows 電腦（筆電在 18:00 常睡眠，曾整天沒資料）。SOP 見 `deploy/搬遷步驟.md`
 - [ ] 待辦：`api-core.js` → `functions/api-core.js` 目前為手動維護副本，考慮改為共用模組避免雙邊分歧
 - [ ] 待辦：元大投信端點只回最新一日，無法回補歷史，尚無解法
 
@@ -45,6 +46,7 @@
 ├─ institutional_flows.mjs     三大法人資料抓取
 ├─ institutional_analysis.mjs  三大法人分析報告
 ├─ run_*.ps1                   Windows 工作排程器進入點（4 支）
+├─ deploy/                     排程搬遷 SOP（搬遷步驟.md）與工作排程器匯出檔（*.xml）
 ├─ config.local.json           FinMind token、Gmail app password（gitignored）
 ├─ data/
 │  ├─ etf_holdings/{YYYY-MM-DD}/{代號}.json
