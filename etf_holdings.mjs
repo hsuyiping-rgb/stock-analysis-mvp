@@ -9,6 +9,12 @@ const ROOT = process.cwd();
 const DATA_DIR = resolve(ROOT, "data", "etf_holdings");
 const OPTIONS = parseArgs(process.argv.slice(2));
 const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36";
+// Node 的 fetch 沒有預設逾時，投信端點若不回應就會無限等待。排程在 2026-08-13／14
+// 兩天從睡眠喚醒後補跑，就是卡在這裡直到 ExecutionTimeLimit（30 分）被強制終止
+// （0xC000013A），整批只抓到 4 檔與 0 檔。逾時後由 main() 的 catch 跳過該檔續跑。
+const FETCH_TIMEOUT_MS = 20000;
+// 剛喚醒時網路堆疊常尚未就緒，第一次請求失敗屬正常，故每檔 ETF 失敗後重試一次。
+const RETRY_DELAY_MS = 5000;
 
 // fundCode／fundId 是各投信內部代碼，與股票代號不同，逆向方式見 docs/etf-holdings-research.md。
 // category：tw-active＝純台股主動式（共識與增減碼分析主體）；
@@ -32,6 +38,8 @@ const ETF_LIST = [
 ];
 
 const cookieCache = new Map();
+// 中信的 API token（換發一次後沿用）。宣告在 main() 之前，重試時清空才不會踩到 TDZ。
+let ctbcToken = "";
 
 main().catch((error) => {
   console.error(error);
@@ -42,7 +50,7 @@ async function main() {
   const results = [];
   for (const etf of ETF_LIST) {
     try {
-      const snapshot = await etf.fetcher(etf);
+      const snapshot = await fetchWithRetry(etf);
       snapshot.category = etf.category;
       results.push(snapshot);
       await saveSnapshot(snapshot);
@@ -58,6 +66,31 @@ async function main() {
   }
 }
 
+// 單檔 ETF 失敗後重試一次；cookie 快取一併清掉，避免拿到失效的暖身結果重蹈覆轍。
+async function fetchWithRetry(etf) {
+  try {
+    return await etf.fetcher(etf);
+  } catch (error) {
+    console.error(`${etf.stockNo} 第一次抓取失敗（${error.message}），${RETRY_DELAY_MS / 1000} 秒後重試`);
+    cookieCache.clear();
+    ctbcToken = "";
+    await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+    return etf.fetcher(etf);
+  }
+}
+
+// 統一包上逾時；逾時錯誤改寫成看得懂的訊息，方便 log 事後判讀。
+async function fetchWithTimeout(url, init = {}) {
+  try {
+    return await fetch(url, { ...init, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+  } catch (error) {
+    if (error.name === "TimeoutError" || error.name === "AbortError") {
+      throw new Error(`請求逾時 ${FETCH_TIMEOUT_MS / 1000} 秒：${url}`);
+    }
+    throw error;
+  }
+}
+
 // ---- 統一投信（ezmoney.com.tw） ----
 
 async function fetchUniPcf(etf) {
@@ -68,7 +101,7 @@ async function fetchUniPcf(etf) {
   const candidates = OPTIONS.date ? [OPTIONS.date] : rocDateCandidates();
   let lastError = null;
   for (const rocDate of candidates) {
-    const response = await fetch(`${base}/ETF/Transaction/GetPCF`, {
+    const response = await fetchWithTimeout(`${base}/ETF/Transaction/GetPCF`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json; charset=UTF-8",
@@ -126,7 +159,7 @@ async function fetchCapitalPcf(etf) {
   const cookie = await warmupCookie(referer);
   // date 傳 null 抓最新公告；也可指定公告日 YYYY-MM-DD 查歷史。
   const date = OPTIONS.date ? rocToIso(OPTIONS.date) : null;
-  const response = await fetch(`${base}/CFWeb/api/etf/buyback`, {
+  const response = await fetchWithTimeout(`${base}/CFWeb/api/etf/buyback`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -176,7 +209,7 @@ async function fetchNomuraPcf(etf) {
   if (OPTIONS.date) {
     date = rocToIso(OPTIONS.date);
   } else {
-    const dateResponse = await fetch(`${base}/GetFundTradeInfoDate`, {
+    const dateResponse = await fetchWithTimeout(`${base}/GetFundTradeInfoDate`, {
       method: "POST",
       headers,
       body: JSON.stringify({ FundNo: etf.fundCode, Type: 1 })
@@ -185,7 +218,7 @@ async function fetchNomuraPcf(etf) {
     date = String(datePayload.Entries?.LatestDate || "").replaceAll("/", "-");
     if (!date) throw new Error("查不到最新公告日");
   }
-  const response = await fetch(`${base}/GetFundTradeInfo`, {
+  const response = await fetchWithTimeout(`${base}/GetFundTradeInfo`, {
     method: "POST",
     headers,
     body: JSON.stringify({ FundNo: etf.fundCode, Type: 1, Date: date })
@@ -216,13 +249,11 @@ async function fetchNomuraPcf(etf) {
 
 // ---- 中信投信（ctbcinvestments.com.tw，Incapsula 防護＋token 換發） ----
 
-let ctbcToken = "";
-
 async function fetchCtbcPcf(etf) {
   const base = "https://www.ctbcinvestments.com.tw";
   const cookie = await warmupCookie(`${base}/Etf`);
   if (!ctbcToken) {
-    const authResponse = await fetch(`${base}/API/home/AuthToken?token=www.ctbcinvestments.com`, {
+    const authResponse = await fetchWithTimeout(`${base}/API/home/AuthToken?token=www.ctbcinvestments.com`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "User-Agent": USER_AGENT, "Cookie": cookie },
       body: "{}"
@@ -237,7 +268,7 @@ async function fetchCtbcPcf(etf) {
   const startDate = OPTIONS.date
     ? rocToIso(OPTIONS.date).replaceAll("-", "/")
     : new Date().toLocaleDateString("zh-TW", { timeZone: "Asia/Taipei", year: "numeric", month: "2-digit", day: "2-digit" });
-  const response = await fetch(`${base}/API/etf/ETFHoldingWeight?token=${ctbcToken}`, {
+  const response = await fetchWithTimeout(`${base}/API/etf/ETFHoldingWeight?token=${ctbcToken}`, {
     method: "POST",
     headers: { "Content-Type": "application/json", "User-Agent": USER_AGENT, "Cookie": cookie },
     body: JSON.stringify({ FID: etf.fundCode, StartDate: startDate })
@@ -283,7 +314,7 @@ async function fetchYuantaPcf(etf) {
     Platform: "ETF",
     ticker: etf.fundCode
   });
-  const response = await fetch(`https://etfapi.yuantaetfs.com/ectranslation/api/bridge?${params}`, {
+  const response = await fetchWithTimeout(`https://etfapi.yuantaetfs.com/ectranslation/api/bridge?${params}`, {
     headers: { "User-Agent": USER_AGENT }
   });
   const payload = await response.json();
@@ -321,7 +352,7 @@ async function fetchFhtrustPcf(etf) {
   const qDate = OPTIONS.date
     ? rocToIso(OPTIONS.date).replaceAll("-", "/")
     : new Date().toLocaleDateString("zh-TW", { timeZone: "Asia/Taipei", year: "numeric", month: "2-digit", day: "2-digit" }).replaceAll("-", "/");
-  const response = await fetch(`https://www.fhtrust.com.tw/api/assets?fundID=${etf.fundCode}&qDate=${qDate}`, {
+  const response = await fetchWithTimeout(`https://www.fhtrust.com.tw/api/assets?fundID=${etf.fundCode}&qDate=${qDate}`, {
     headers: { "User-Agent": USER_AGENT }
   });
   const payload = await response.json();
@@ -365,7 +396,7 @@ async function warmupCookie(url) {
   const jar = new Map();
   let current = url;
   for (let hop = 0; hop < 8; hop += 1) {
-    const response = await fetch(current, {
+    const response = await fetchWithTimeout(current, {
       redirect: "manual",
       headers: { "User-Agent": USER_AGENT, "Cookie": cookieHeader(jar) }
     });
