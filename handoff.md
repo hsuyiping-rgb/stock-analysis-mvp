@@ -19,10 +19,19 @@
 4. 清掉 `.git/index.lock`（0 bytes，建立於 08-13 09:45，無 git 程序）。這是上次 push 一直沒成功的原因。
 5. 三個積欠的 commit 全部推上 GitHub，本地與 `origin/master` 已同步。
 
+**2026-08-17 進度：搬遷已在新機（KFES）執行到步驟 6**
+
+環境檢查（步驟 1–4）全通過：Node v26.4.0、Git 2.53.0、`G:` 已掛載、`config.local.json` 四個鍵齊全、時區 Taipei、AC 睡眠／休眠皆為「永不」、無電池（桌機，`DisallowStartIfOnBatteries` 不會擋）。
+
+兩個排程已註冊並**啟用**，身分 `kfes`／`LogonType=Interactive`，下次執行 08-17 18:00／18:30。步驟 5 的手動測試依使用者決定跳過（當時 07:45，三大法人資料未出，且會與舊機重複），直接讓排程當晚實跑。
+
+**發現文件錯誤並已修正**：XML 的 `UserId` 是舊機 SID，`Register-ScheduledTask -User` 覆蓋不了，會噴 `The parameter is incorrect. (11,8):UserId:`（`0x80070057`）。正解是先在記憶體 `-replace` 掉 `<UserId>` 再註冊。已寫回 `deploy/搬遷步驟.md` 步驟 6。
+
 ## 🚦 目前狀態
 
 - **可運行**，無做到一半的工作。
-- 排程仍在舊筆電（DESKTOP-31QBU95）上，尚未搬遷、也尚未停用。
+- 新機（KFES）排程已啟用；**舊筆電（DESKTOP-31QBU95）的兩個排程當時仍啟用、尚未停用** ← 接手時第一件事就是確認這點。
+- 新機 `AutoAdminLogon = 0`，**自動登入尚未設定**（需使用者自行用 `netplwiz` 處理，重開機後 `G:` 才會回來）。
 - 未完成項目：Firebase Cloud Functions 上線（卡在 Blaze 方案未升級，非程式問題）。
 
 **已知缺漏、無法回補**（非 bug）：
@@ -32,9 +41,11 @@
 
 ## ➡️ 下一步
 
-1. **（主線）在另一台不關機的 Windows 電腦執行搬遷**：完全照 `deploy/搬遷步驟.md` 做。該文件含七個步驟、驗收標準與錯誤碼對照表。關鍵限制：`G:` 只存在於已登入的工作階段，排程不能設成「不論使用者是否登入都執行」，新機需自動登入、永不睡眠、時區台北。
-2. 新機連續跑穩兩、三天後，回舊筆電 `Disable-ScheduledTask` 停用兩個排程（停用不刪除）。過渡期間**別讓兩台同時跑排程**，會產生 Google Drive 衝突副本並重複寄信。
-3. 08-18 之後補確認 `00983A`、`00990A` 的 08-14 資料是否已出現。
+1. **（最優先）確認舊筆電兩個排程已停用**。08-17 收工時尚未停用，兩台同時跑會產生 Google Drive 衝突副本並寄兩封重複的信。在 DESKTOP-31QBU95 執行 `Disable-ScheduledTask -TaskName "ETF持股每日快照"`、`Disable-ScheduledTask -TaskName "三大法人每日快照"`。
+2. **在新機設定自動登入**（`netplwiz`），目前 `AutoAdminLogon = 0`。
+3. **驗收 08-17 當晚首跑**：`Get-ScheduledTaskInfo` 兩個工作的 `LastTaskResult` 應為 `0x0`，並確認 `data/etf_holdings/2026-08-17/` 有 14 檔、`reports/etf-analysis-latest.html` 有產生、信箱收到信。若有兩份衝突副本或兩封信，代表舊機也跑了。
+4. 新機連續跑穩兩、三天後才算搬遷完成（`deploy/搬遷步驟.md` 步驟 7）。停用而非刪除，出狀況可 `Enable-ScheduledTask` 救回。
+5. 08-18 之後補確認 `00983A`、`00990A` 的 08-14 資料是否已出現。
 4. 長線待辦：`api-core.js` 與 `functions/api-core.js` 目前是手動維護副本，考慮改為共用模組。
 
 ## ⚠️ 注意事項
@@ -50,7 +61,7 @@
 
 ## 🕐 最後更新
 
-- 時間：2026-08-16 收工
-- 更新者：Claude Opus 5 @ DESKTOP-31QBU95
-- Git push：✅ 已推（`ae12650`～`5ab525a` 共 5 個 commit，與 origin/master 同步）
-- Obsidian（L3）：✅ `投資股票分析/專案工作流程.md` 已補決策紀錄、踩坑筆記與更動紀錄
+- 時間：2026-08-17 收工
+- 更新者：Claude Opus 5 @ KFES（新機，搬遷目標機）
+- Git push：見本次 commit
+- Obsidian（L3）：❌ 未更新 —— 這台的 vault（`G:\我的雲端硬碟\Obsidian`）只同步到「數學素養題庫系統」，沒有「投資股票分析」資料夾。回到舊筆電或等同步完成後需補記本次搬遷進度。
