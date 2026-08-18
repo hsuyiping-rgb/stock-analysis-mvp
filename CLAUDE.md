@@ -20,9 +20,11 @@ node .\stock_secretary.mjs .\holdings.csv --market tw   # 產生台股晨報
 node .\stock_secretary.mjs .\holdings.csv --market us   # 產生美股晚報
 node .\etf_holdings.mjs                    # 抓當日 ETF 持股快照
 node .\etf_holdings.mjs --date 115/07/10   # 抓指定公告日（民國年，僅部分投信支援回補）
+npm.cmd run sync:functions                 # 把 api-core.js 同步到 functions/api-core.js
+npm.cmd run check:functions                # 檢查兩份 api-core.js 是否一致（不一致 exit 1）
 ```
 
-無 lint／test／build script；`package.json` 只有 `start`。改動後以實際執行上述指令驗證（打對應 `/api/*` 端點或檢查 `reports/`、`data/` 輸出）。
+無 lint／test／build script；`package.json` 只有 `start` 與上述兩個同步／檢查 script。改動後以實際執行上述指令驗證（打對應 `/api/*` 端點或檢查 `reports/`、`data/` 輸出）。
 
 ## Architecture
 
@@ -31,7 +33,7 @@ node .\etf_holdings.mjs --date 115/07/10   # 抓指定公告日（民國年，�
 `api-core.js` 是所有股票資料 API 的實作（Yahoo/Google/MOPS/TWSE OpenAPI/FinMind），`handleRequest()` 是唯一入口，依 pathname 分派到 `/api/yahoo/:symbol`、`/api/google/:symbol`、`/api/mops/:symbol`、`/api/chips/:symbol`、`/api/stock/:symbol`（彙整版）。
 
 - 本機執行：`server.js` 建立 Node HTTP server 呼叫 `handleRequest()`。
-- Firebase Cloud Functions 部署：`functions/api-core.js` 是**手動維護的副本**，不是 import——修改 `api-core.js` 的 API 邏輯後必須同步複製到 `functions/api-core.js`，否則本機與雲端行為會分歧（見 `docs/cloud-functions-api.md`）。目前 Functions 部署被 Firebase Blaze 方案卡住，尚未上線。
+- Firebase Cloud Functions 部署：`functions/api-core.js` 是**自動產生的副本**（Firebase 只上傳 `functions/`，無法 import 目錄外的模組）。**不要手動編輯 `functions/api-core.js`**；改 `api-core.js` 後跑 `npm.cmd run sync:functions` 同步，`npm.cmd run check:functions` 可檢查是否一致（不一致 exit 1）。`firebase.json` 的 functions `predeploy` 已掛上同步指令，deploy 時會自動執行（見 `docs/cloud-functions-api.md`）。目前 Functions 部署被 Firebase Blaze 方案卡住，尚未上線。
 - 前端（`index.html`/`app.js`/`styles.css`）另有一份存在 Supabase 表 `stock_analysis_projects`（見 `docs/supabase-page-deployment.md`）作為版本化備份，非即時同步。
 
 ### 資料來源與快取

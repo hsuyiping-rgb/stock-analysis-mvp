@@ -27,7 +27,7 @@
 - [x] 階段五：ETF 分析報告接入每日 email 自動寄送
 - [ ] 階段六：Firebase Cloud Functions 上線（**卡在 Blaze 方案未升級**）
 - [ ] 階段七：兩個每日排程搬到不關機的 Windows 電腦（筆電在 18:00 常睡眠，曾整天沒資料）。SOP 見 `deploy/搬遷步驟.md`
-- [ ] 待辦：`api-core.js` → `functions/api-core.js` 目前為手動維護副本，考慮改為共用模組避免雙邊分歧
+- [x] `api-core.js` → `functions/api-core.js` 的副本改由 `scripts/sync-api-core.mjs` 產生（`npm run sync:functions`／`check:functions`，並掛在 firebase `predeploy`），不再手動複製
 - [ ] 待辦：元大投信端點只回最新一日，無法回補歷史，尚無解法
 
 ## 資料夾結構
@@ -46,6 +46,7 @@
 ├─ institutional_flows.mjs     三大法人資料抓取
 ├─ institutional_analysis.mjs  三大法人分析報告
 ├─ run_*.ps1                   Windows 工作排程器進入點（4 支）
+├─ scripts/sync-api-core.mjs   把 api-core.js 同步到 functions/（--check 只驗證）
 ├─ deploy/                     排程搬遷 SOP（搬遷步驟.md）與工作排程器匯出檔（*.xml）
 ├─ config.local.json           FinMind token、Gmail app password（gitignored）
 ├─ data/
@@ -53,7 +54,7 @@
 │  └─ institutional/{YYYY-MM-DD}/twse.json
 ├─ reports/                    產出的 HTML／txt 報告
 ├─ docs/                       chips-api、etf-holdings-research、cloud-functions-api 等
-├─ functions/                  Firebase Cloud Functions（api-core.js 為手動副本）
+├─ functions/                  Firebase Cloud Functions（api-core.js 為自動產生副本，勿手改）
 └─ firebase-public/
 ```
 
@@ -73,5 +74,5 @@
 - 修改前先確認計畫，優先保留原有資料結構
 - **絕對路徑務必含「AI作品」這層**：`G:\我的雲端硬碟\AI作品\投資股票分析`（排程曾因漏這層而失效）
 - 敏感設定只放 `config.local.json` 與 Windows 排程器，不寫入程式碼、不提交 git
-- 改 `api-core.js` 的 API 邏輯後，須同步複製到 `functions/api-core.js`
+- 改 `api-core.js` 的 API 邏輯後，跑 `npm run sync:functions` 同步到 `functions/api-core.js`（提交前可用 `npm run check:functions` 驗證）
 - 新增或除錯投信端點前，**務必先讀 `docs/etf-holdings-research.md`**

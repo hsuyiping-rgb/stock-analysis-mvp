@@ -41,12 +41,15 @@
 
 ## ➡️ 下一步
 
+> 以下 1–5 都必須在**使用者的 Windows 機器**上做，雲端 Agent 環境沒有 `G:`、也連不到投信網站，無法代勞。
+
 1. **（最優先）確認舊筆電兩個排程已停用**。08-17 收工時尚未停用，兩台同時跑會產生 Google Drive 衝突副本並寄兩封重複的信。在 DESKTOP-31QBU95 執行 `Disable-ScheduledTask -TaskName "ETF持股每日快照"`、`Disable-ScheduledTask -TaskName "三大法人每日快照"`。
 2. **在新機設定自動登入**（`netplwiz`），目前 `AutoAdminLogon = 0`。
 3. **驗收 08-17 當晚首跑**：`Get-ScheduledTaskInfo` 兩個工作的 `LastTaskResult` 應為 `0x0`，並確認 `data/etf_holdings/2026-08-17/` 有 14 檔、`reports/etf-analysis-latest.html` 有產生、信箱收到信。若有兩份衝突副本或兩封信，代表舊機也跑了。
 4. 新機連續跑穩兩、三天後才算搬遷完成（`deploy/搬遷步驟.md` 步驟 7）。停用而非刪除，出狀況可 `Enable-ScheduledTask` 救回。
 5. 08-18 之後補確認 `00983A`、`00990A` 的 08-14 資料是否已出現。
-4. 長線待辦：`api-core.js` 與 `functions/api-core.js` 目前是手動維護副本，考慮改為共用模組。
+6. **本機的 08-15～08-18 快照尚未推上 GitHub**（`origin/master` 的 `data/` 只到 08-14）；回到有資料的機器時記得 commit。
+7. Firebase Cloud Functions 上線仍卡在 Blaze 方案（非程式問題）。上線時要**補 `firebase.json` 的 `/api/**` → `api` function hosting rewrite**，現有設定只有 `**` → `/index.html`，`/api/*` 會被吃掉。詳見 `docs/cloud-functions-api.md`。
 
 ## ⚠️ 注意事項
 
@@ -61,7 +64,9 @@
 
 ## 🕐 最後更新
 
-- 時間：2026-08-17 收工
-- 更新者：Claude Opus 5 @ KFES（新機，搬遷目標機）
-- Git push：見本次 commit
-- Obsidian（L3）：❌ 未更新 —— 這台的 vault（`G:\我的雲端硬碟\Obsidian`）只同步到「數學素養題庫系統」，沒有「投資股票分析」資料夾。回到舊筆電或等同步完成後需補記本次搬遷進度。
+- 時間：2026-08-18
+- 更新者：Claude Code @ 雲端 remote session（Linux 容器，無 `G:`、無投信網站連線）
+- Git push：branch `claude/kaigong-evz7w8`
+- 本次做的事：把 `api-core.js` → `functions/api-core.js` 的手動副本改成腳本產生（`scripts/sync-api-core.mjs`，`npm run sync:functions`／`check:functions`，並掛上 firebase `predeploy`），同步更新 `CLAUDE.md`／`agents.md`／`docs/cloud-functions-api.md`。順帶記下 `firebase.json` 缺 `/api/**` rewrite 這個未爆彈。
+- 排程搬遷相關的驗收（上面下一步 1–5）**沒有動**，雲端環境做不到，仍待使用者在 Windows 機器上處理。
+- Obsidian（L3）：❌ 未更新
