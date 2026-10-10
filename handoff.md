@@ -42,5 +42,5 @@
 
 - 時間：2026-10-10 收工
 - 更新者：Claude Opus 5.5 @ DESKTOP-31QBU95（舊筆電）
-- Git push：待推
+- Git push：✅ 已推（`90f8f68`）。另：又遇到 08-18 殘留的 0 bytes `.git/index.lock` 擋住 commit，確認無 git 程序後已刪除——KFES 端可能有 git 操作中斷，留意
 - Obsidian（L3）：✅ 已更新（含補記 08-17 搬遷）
