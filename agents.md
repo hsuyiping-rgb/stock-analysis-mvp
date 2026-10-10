@@ -8,7 +8,7 @@
 台股／美股股票分析平台，由三個可獨立執行的子系統組成，共用 Node.js（`type: module`，無建置步驟、無框架）：
 
 1. **股價分析網站 MVP** — 單檔股票查詢、財報健檢、均線買賣點（`server.js` + `api-core.js` + 靜態前端）
-2. **每日股票投資秘書** — 讀個人持股清單產生 HTML 晨報／晚報（`stock_secretary.mjs`）
+2. **每日股票投資秘書** — 讀個人持股清單產生 HTML 晨報／晚報＋規則買賣訊號並寄信（`stock_secretary.mjs`，門檻在 `secretary_rules.json`）
 3. **研究管線** — 每日抓 ETF 持股（PCF）與三大法人買賣超，做選股與資金流向研究（`etf_holdings.mjs`、`institutional_flows.mjs`）
 
 目標：把選股所需的籌碼、法人、ETF 持股資料自動化收集並每日寄送分析報告，減少人工查詢。
@@ -26,7 +26,8 @@
 - [x] 階段四：三大法人熱門股 + 5/20/60 成本線研究管線
 - [x] 階段五：ETF 分析報告接入每日 email 自動寄送
 - [ ] 階段六：Firebase Cloud Functions 上線（**卡在 Blaze 方案未升級**）
-- [ ] 階段七：兩個每日排程搬到不關機的 Windows 電腦（筆電在 18:00 常睡眠，曾整天沒資料）。SOP 見 `deploy/搬遷步驟.md`
+- [x] 階段七：兩個每日排程搬到不關機的 Windows 電腦 KFES（2026-08-17 起由 KFES 產生；舊筆電排程已停用）。SOP 見 `deploy/搬遷步驟.md`
+- [ ] 階段八：持股秘書每個開盤日追蹤台股／美股庫存＋規則買賣訊號並寄信（程式完成 2026-10-10；**待在 KFES 註冊排程**，見搬遷步驟第 8 步）
 - [ ] 待辦：`api-core.js` → `functions/api-core.js` 目前為手動維護副本，考慮改為共用模組避免雙邊分歧
 - [ ] 待辦：元大投信端點只回最新一日，無法回補歷史，尚無解法
 
@@ -40,15 +41,16 @@
 ├─ api-core.js                 所有股票 API 實作，handleRequest() 為唯一入口
 ├─ server.js                   本機 HTTP server
 ├─ index.html / app.js / styles.css   靜態前端
-├─ stock_secretary.mjs         每日投資秘書
+├─ stock_secretary.mjs         每日投資秘書（含規則訊號、交易日判斷）
+├─ secretary_rules.json        投資秘書規則訊號門檻（RSI、乖離、停利停損、單檔占比）
 ├─ etf_holdings.mjs            ETF 持股抓取
 ├─ etf_analysis.mjs            ETF 持股分析報告
 ├─ institutional_flows.mjs     三大法人資料抓取
 ├─ institutional_analysis.mjs  三大法人分析報告
-├─ run_*.ps1                   Windows 工作排程器進入點（4 支）
+├─ run_*.ps1                   Windows 工作排程器進入點（run_stock_secretary.ps1 為台股／美股秘書共用）
 ├─ 資產報表/                   個人資產與交易明細（整個資料夾 gitignored，只在 Google Drive）
-│                              含 build_美股複委託投資明細.py → 美股複委託投資明細_*.xlsx
-├─ deploy/                     排程搬遷 SOP（搬遷步驟.md）與工作排程器匯出檔（*.xml）
+│                              含 build_美股複委託投資明細.py、build_台股庫存明細.py → *.xlsx
+├─ deploy/                     排程搬遷 SOP（搬遷步驟.md）與 4 個工作排程器 XML
 ├─ config.local.json           FinMind token、Gmail app password（gitignored）
 ├─ data/
 │  ├─ etf_holdings/{YYYY-MM-DD}/{代號}.json
