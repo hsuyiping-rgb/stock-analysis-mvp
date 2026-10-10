@@ -46,6 +46,8 @@
 ├─ institutional_flows.mjs     三大法人資料抓取
 ├─ institutional_analysis.mjs  三大法人分析報告
 ├─ run_*.ps1                   Windows 工作排程器進入點（4 支）
+├─ 資產報表/                   個人資產與交易明細（整個資料夾 gitignored，只在 Google Drive）
+│                              含 build_美股複委託投資明細.py → 美股複委託投資明細_*.xlsx
 ├─ deploy/                     排程搬遷 SOP（搬遷步驟.md）與工作排程器匯出檔（*.xml）
 ├─ config.local.json           FinMind token、Gmail app password（gitignored）
 ├─ data/
