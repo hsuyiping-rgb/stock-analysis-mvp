@@ -1,5 +1,5 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 const ROOT = process.cwd();
@@ -12,8 +12,25 @@ const LATEST_SLUG = OPTIONS.market ? `latest-${OPTIONS.market}` : "latest";
 const REPORT_LABEL = OPTIONS.market === "tw" ? "台股每日股票投資秘書" : OPTIONS.market === "us" ? "美股每日股票投資秘書" : "每日股票投資秘書";
 const REPORT_PATH = join(REPORT_DIR, `${REPORT_SLUG}-${TODAY}.html`);
 const INDEX_PATH = join(REPORT_DIR, `${LATEST_SLUG}.html`);
+const MAIL_PATH = join(REPORT_DIR, `${LATEST_SLUG}-mail.html`);
 const FINMIND_API = "https://api.finmindtrade.com/api/v4/data";
-const FINMIND_TOKEN = process.env.FINMIND_TOKEN || "";
+const LOCAL_CONFIG = readJsonSafe(resolve(ROOT, "config.local.json"));
+const FINMIND_TOKEN = process.env.FINMIND_TOKEN || LOCAL_CONFIG.FINMIND_TOKEN || "";
+const RULES = {
+  rsi_period: 14, rsi_overbought: 75, rsi_oversold: 30, ma20_bias_hot_pct: 15,
+  take_profit_pct: 100, stop_loss_pct: -15, max_weight_pct: 20, add_score: 2, trim_score: -2,
+  ...readJsonSafe(resolve(ROOT, "secretary_rules.json"))
+};
+// 非交易日時以此結束碼離開，讓排程腳本略過寄信但不當成失敗
+const EXIT_NOT_TRADING_DAY = 10;
+const FETCH_TIMEOUT_MS = 20000;
+// NYSE 休市日（遇週末的國定假日已換成實際休市日）；每年底補下一年
+const US_HOLIDAYS = new Set([
+  "2026-01-01", "2026-01-19", "2026-02-16", "2026-04-03", "2026-05-25", "2026-06-19",
+  "2026-07-03", "2026-09-07", "2026-11-26", "2026-12-25",
+  "2027-01-01", "2027-01-18", "2027-02-15", "2027-03-26", "2027-05-31", "2027-06-18",
+  "2027-07-05", "2027-09-06", "2027-11-25", "2027-12-24"
+]);
 
 const SOURCE_NOTE = [
   "價格與 K 線：Yahoo Finance chart endpoint，台股依序嘗試 .TW / .TWO。",
@@ -31,6 +48,14 @@ main().catch(async (error) => {
 });
 
 async function main() {
+  if (OPTIONS.tradingDayOnly) {
+    const reason = await nonTradingReason();
+    if (reason) {
+      console.log(`${TODAY} ${reason}，略過產生報告。`);
+      process.exitCode = EXIT_NOT_TRADING_DAY;
+      return;
+    }
+  }
   if (!existsSync(HOLDINGS_PATH)) {
     throw new Error(`找不到持股清單：${HOLDINGS_PATH}`);
   }
@@ -44,20 +69,156 @@ async function main() {
   for (const holding of holdings) {
     cards.push(await buildCard(holding));
   }
+  applyRuleSignals(cards);
 
   const html = renderReport(cards);
   await writeFile(REPORT_PATH, html, "utf8");
   await writeFile(INDEX_PATH, html, "utf8");
+  await writeFile(MAIL_PATH, renderMailBody(cards), "utf8");
   console.log(`晨報已產生：${REPORT_PATH}`);
 }
 
+// 回傳非交易日的原因；是交易日回傳空字串。台股休市日查證交所 OpenAPI，查不到時只看週末。
+async function nonTradingReason() {
+  const weekday = new Date(`${TODAY}T12:00:00+08:00`).getUTCDay();
+  if (weekday === 0 || weekday === 6) return "週末休市";
+  if (OPTIONS.market === "us") return US_HOLIDAYS.has(TODAY) ? "美股休市" : "";
+  if (OPTIONS.market !== "tw") return "";
+  try {
+    const rows = await fetchJson("https://openapi.twse.com.tw/v1/holidaySchedule/holidaySchedule");
+    const rocDate = `${Number(TODAY.slice(0, 4)) - 1911}${TODAY.slice(5, 7)}${TODAY.slice(8, 10)}`;
+    // 清單也列「開始交易日／最後交易日」，那些日子照常交易
+    const hit = rows.find((row) => row.Date === rocDate && !/交易日/.test(row.Name || ""));
+    return hit ? `台股休市（${hit.Name}）` : "";
+  } catch (error) {
+    console.error(`休市日查詢失敗，視為交易日：${error.message}`);
+    return "";
+  }
+}
+
+// 依 secretary_rules.json 的門檻為每檔計分，產生「可考慮加碼／續抱觀察／留意減碼」與理由
+function applyRuleSignals(cards) {
+  const totalValue = cards.reduce((total, card) => total + (card.quote.ok ? card.holding.quantity * card.quote.latest.close : 0), 0);
+  for (const card of cards) {
+    const { holding, quote } = card;
+    const rule = { score: 0, reasons: [], verdict: "資料不足", pnlPct: null, weightPct: null, rsi: null };
+    card.rule = rule;
+    if (!quote.ok) continue;
+    const close = quote.latest.close;
+    const cost = toNumber(holding.cost_basis);
+    const closes = quote.candles.map((row) => row.close);
+    const prevMa20 = movingAverage(quote.candles.slice(0, -1), 20);
+    const prevMa60 = movingAverage(quote.candles.slice(0, -1), 60);
+    const prevClose = quote.previous?.close;
+    rule.rsi = rsi(closes, RULES.rsi_period);
+    rule.pnlPct = cost ? ((close - cost) / cost) * 100 : null;
+    rule.weightPct = totalValue ? (holding.quantity * close / totalValue) * 100 : null;
+    const add = (points, text) => { rule.score += points; rule.reasons.push(text); };
+
+    if (quote.ma20 && quote.ma60) {
+      if (close > quote.ma20 && quote.ma20 > quote.ma60) add(1, "均線多頭排列（收盤 > 20 日 > 60 日）");
+      if (close < quote.ma20 && quote.ma20 < quote.ma60) add(-1, "均線空頭排列（收盤 < 20 日 < 60 日）");
+    }
+    if (prevMa60 && prevClose >= prevMa60 && close < quote.ma60) add(-1, "今日跌破 60 日均線");
+    if (prevMa20 && prevClose <= prevMa20 && close > quote.ma20) add(1, "今日站回 20 日均線");
+    if (rule.rsi !== null && rule.rsi >= RULES.rsi_overbought) add(-1, `RSI ${rule.rsi.toFixed(0)} 過熱（≥ ${RULES.rsi_overbought}）`);
+    if (rule.rsi !== null && rule.rsi <= RULES.rsi_oversold) add(1, `RSI ${rule.rsi.toFixed(0)} 超賣（≤ ${RULES.rsi_oversold}）`);
+    if (quote.ma20) {
+      const bias = ((close - quote.ma20) / quote.ma20) * 100;
+      if (bias >= RULES.ma20_bias_hot_pct) add(-1, `20 日乖離 ${fmtPct(bias)}，短線漲多`);
+    }
+    if (rule.pnlPct !== null && rule.pnlPct <= RULES.stop_loss_pct) add(-2, `虧損 ${fmtPct(rule.pnlPct)} 達停損門檻（${RULES.stop_loss_pct}%）`);
+    if (rule.pnlPct !== null && rule.pnlPct >= RULES.take_profit_pct && (close < (quote.ma20 ?? 0) || (rule.rsi ?? 0) >= RULES.rsi_overbought)) {
+      add(-1, `獲利 ${fmtPct(rule.pnlPct)} 已達停利門檻且動能轉弱，可考慮分批停利`);
+    }
+    if (rule.weightPct !== null && rule.weightPct >= RULES.max_weight_pct) add(-1, `占${OPTIONS.market === "us" ? "美股" : OPTIONS.market === "tw" ? "台股" : ""}市值 ${rule.weightPct.toFixed(1)}%，超過單檔上限 ${RULES.max_weight_pct}%`);
+
+    rule.verdict = rule.score >= RULES.add_score ? "可考慮加碼" : rule.score <= RULES.trim_score ? "留意減碼" : "續抱觀察";
+  }
+}
+
+function rsi(closes, period) {
+  if (closes.length <= period) return null;
+  let gain = 0;
+  let loss = 0;
+  for (let i = 1; i <= period; i += 1) {
+    const diff = closes[i] - closes[i - 1];
+    if (diff >= 0) gain += diff; else loss -= diff;
+  }
+  gain /= period;
+  loss /= period;
+  // Wilder 平滑
+  for (let i = period + 1; i < closes.length; i += 1) {
+    const diff = closes[i] - closes[i - 1];
+    gain = (gain * (period - 1) + Math.max(diff, 0)) / period;
+    loss = (loss * (period - 1) + Math.max(-diff, 0)) / period;
+  }
+  if (loss === 0) return 100;
+  return 100 - 100 / (1 + gain / loss);
+}
+
+const VERDICT_ORDER = { "留意減碼": 0, "可考慮加碼": 1, "續抱觀察": 2, "資料不足": 3 };
+const VERDICT_COLOR = { "留意減碼": "#b42318", "可考慮加碼": "#027a48", "續抱觀察": "#475467", "資料不足": "#9a3412" };
+
+function sortedBySignal(cards) {
+  return [...cards].sort((a, b) => VERDICT_ORDER[a.rule.verdict] - VERDICT_ORDER[b.rule.verdict] || a.rule.score - b.rule.score);
+}
+
+function renderSignalTable(cards, inline = false) {
+  const cell = inline ? ' style="border:1px solid #d9e0ea;padding:4px 8px;"' : "";
+  const num = inline ? ' style="border:1px solid #d9e0ea;padding:4px 8px;text-align:right;"' : ' class="num"';
+  const rows = sortedBySignal(cards).map(({ holding, quote, rule }) => {
+    const color = quote.ok && quote.change >= 0 ? "#b42318" : "#027a48";
+    return `<tr>
+      <td${cell}>${escapeHtml(holding.symbol)} ${escapeHtml(holding.name)}</td>
+      <td${num}>${quote.ok ? fmtNumber(quote.latest.close) : "-"}</td>
+      <td${num}><span style="color:${color}">${quote.ok ? fmtPct(quote.changePct) : "-"}</span></td>
+      <td${num}>${rule.pnlPct === null ? "-" : fmtPct(rule.pnlPct)}</td>
+      <td${num}>${rule.weightPct === null ? "-" : `${rule.weightPct.toFixed(1)}%`}</td>
+      <td${num}>${rule.rsi === null ? "-" : rule.rsi.toFixed(0)}</td>
+      <td${cell}><strong style="color:${VERDICT_COLOR[rule.verdict]}">${rule.verdict}</strong></td>
+      <td${cell}>${escapeHtml(rule.reasons.join("；") || "無觸發規則")}</td>
+    </tr>`;
+  }).join("");
+  const th = inline ? ' style="border:1px solid #d9e0ea;padding:4px 8px;background:#1f4e78;color:#fff;"' : "";
+  const heads = ["股票", "收盤", "漲跌", "損益", "占比", "RSI", "規則訊號", "觸發理由"];
+  return `<table${inline ? ' style="border-collapse:collapse;font-size:13px;"' : ' class="signals"'}><thead><tr>${heads.map((h) => `<th${th}>${h}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function verdictCounts(cards) {
+  const counts = { "可考慮加碼": 0, "續抱觀察": 0, "留意減碼": 0, "資料不足": 0 };
+  for (const card of cards) counts[card.rule.verdict] += 1;
+  return counts;
+}
+
+function renderMailBody(cards) {
+  const c = verdictCounts(cards);
+  const dataDate = cards.find((card) => card.quote.ok)?.quote.latest.date || "-";
+  return `<div style="font-family:'Microsoft JhengHei',Arial,sans-serif;line-height:1.6;color:#172033;">
+  <p><strong>${escapeHtml(REPORT_LABEL)}</strong>｜報告日 ${escapeHtml(TODAY)}｜價格資料日 ${escapeHtml(dataDate)}</p>
+  <p>留意減碼 <strong style="color:#b42318">${c["留意減碼"]}</strong> 檔｜可考慮加碼 <strong style="color:#027a48">${c["可考慮加碼"]}</strong> 檔｜續抱觀察 ${c["續抱觀察"]} 檔${c["資料不足"] ? `｜資料不足 ${c["資料不足"]} 檔` : ""}</p>
+  ${renderSignalTable(cards, true)}
+  <p style="color:#667085;font-size:12px;">規則訊號依 secretary_rules.json 門檻機械式計算（均線排列、RSI、20 日乖離、停利停損、單檔占比），不構成投資建議；完整個股卡片、K 線與新聞見附件。</p>
+</div>`;
+}
+
+function readJsonSafe(path) {
+  try {
+    return existsSync(path) ? JSON.parse(readFileSync(path, "utf8").replace(/^﻿/, "")) : {};
+  } catch {
+    return {};
+  }
+}
+
 function parseArgs(args) {
-  const options = { holdingsPath: "holdings.csv", market: "" };
+  const options = { holdingsPath: "holdings.csv", market: "", tradingDayOnly: false };
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
     if (arg === "--market") {
       options.market = normalizeMarket(args[index + 1] || "");
       index += 1;
+    } else if (arg === "--trading-day-only") {
+      options.tradingDayOnly = true;
     } else if (arg.startsWith("--market=")) {
       options.market = normalizeMarket(arg.slice("--market=".length));
     } else if (!arg.startsWith("--")) {
@@ -283,6 +444,7 @@ function renderReport(cards) {
   const okQuotes = cards.filter((card) => card.quote.ok).length;
   const up = cards.filter((card) => card.quote.ok && card.quote.change > 0).length;
   const down = cards.filter((card) => card.quote.ok && card.quote.change < 0).length;
+  const counts = verdictCounts(cards);
   return `<!doctype html>
 <html lang="zh-Hant">
 <head>
@@ -315,6 +477,12 @@ function renderReport(cards) {
     li { margin:5px 0; line-height:1.45; }
     a { color:var(--accent); text-decoration:none; }
     .warn { color:#9a3412; }
+    .signal-wrap { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:16px; margin-bottom:16px; overflow-x:auto; }
+    table.signals { border-collapse:collapse; width:100%; font-size:14px; }
+    table.signals th, table.signals td { border-bottom:1px solid var(--line); padding:6px 8px; text-align:left; vertical-align:top; }
+    table.signals th { color:var(--muted); font-weight:600; white-space:nowrap; }
+    table.signals td.num { text-align:right; white-space:nowrap; }
+    .verdict { font-weight:700; }
     footer { padding:20px 32px 32px; color:var(--muted); font-size:13px; }
     @media (max-width: 640px) { header, main, footer { padding-left:16px; padding-right:16px; } .summary { padding:16px; } .grid { grid-template-columns:1fr; } .top { display:block; } .price { text-align:left; margin-top:8px; } }
   </style>
@@ -329,10 +497,15 @@ function renderReport(cards) {
     <div class="metric"><span>前一交易日上漲</span><strong class="up">${up}</strong></div>
     <div class="metric"><span>前一交易日下跌</span><strong class="down">${down}</strong></div>
     <div class="metric"><span>需人工確認</span><strong>${cards.length - okQuotes}</strong></div>
+    <div class="metric"><span>留意減碼</span><strong class="up">${counts["留意減碼"]}</strong></div>
+    <div class="metric"><span>可考慮加碼</span><strong class="down">${counts["可考慮加碼"]}</strong></div>
   </section>
-  <main><div class="grid">${cards.map(renderCard).join("")}</div></main>
+  <main>
+  <section class="signal-wrap"><h2>規則訊號總覽</h2>${renderSignalTable(cards)}</section>
+  <div class="grid">${cards.map(renderCard).join("")}</div></main>
   <footer>
     <p>${SOURCE_NOTE.map(escapeHtml).join("<br>")}</p>
+    <p>規則訊號門檻（secretary_rules.json）：RSI ${RULES.rsi_period} 日，過熱 ≥ ${RULES.rsi_overbought}、超賣 ≤ ${RULES.rsi_oversold}；20 日乖離 ≥ ${RULES.ma20_bias_hot_pct}%；停利 ${RULES.take_profit_pct}%、停損 ${RULES.stop_loss_pct}%；單檔占比上限 ${RULES.max_weight_pct}%；總分 ≥ ${RULES.add_score} 為「可考慮加碼」、≤ ${RULES.trim_score} 為「留意減碼」。</p>
     <p>此晨報是個人研究輔助，不構成買賣建議；重大決策請回到公司公告、交易所資料與你的投資紀律。</p>
   </footer>
 </body>
@@ -340,7 +513,7 @@ function renderReport(cards) {
 }
 
 function renderCard(card) {
-  const { holding, quote, chips, news, signals } = card;
+  const { holding, quote, chips, news, signals, rule } = card;
   const cls = quote.ok && quote.change >= 0 ? "up" : "down";
   return `<article>
     <div class="top">
@@ -359,6 +532,8 @@ function renderCard(card) {
       <div><dt>法人買賣超</dt><dd>${chips.ok ? `${fmtSigned(chips.institutionalNetShares / 1000)} 張` : escapeHtml(chips.message || chips.error || "-")}</dd></div>
       <div><dt>融資變化</dt><dd>${chips.ok ? `${fmtSigned(chips.marginChange)} 張` : "-"}</dd></div>
     </dl>
+    <h2>規則訊號：<span class="verdict" style="color:${VERDICT_COLOR[rule.verdict]}">${rule.verdict}</span></h2>
+    <ul>${(rule.reasons.length ? rule.reasons : ["無觸發規則"]).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
     <h2>今日重點</h2>
     <ul>${(signals.length ? signals : ["目前只取得基礎資料，建議人工查看新聞與公司公告。"]).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
     <h2>相關新聞</h2>
@@ -391,13 +566,13 @@ function renderFailure(error) {
 }
 
 async function fetchJson(url, headers = {}) {
-  const response = await fetch(url, { headers: { "user-agent": "stock-secretary/1.0", accept: "application/json", ...headers } });
+  const response = await fetch(url, { headers: { "user-agent": "stock-secretary/1.0", accept: "application/json", ...headers }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
   if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
   return response.json();
 }
 
 async function fetchText(url) {
-  const response = await fetch(url, { headers: { "user-agent": "stock-secretary/1.0", accept: "application/rss+xml,text/xml,text/plain,*/*" } });
+  const response = await fetch(url, { headers: { "user-agent": "stock-secretary/1.0", accept: "application/rss+xml,text/xml,text/plain,*/*" }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
   if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
   return response.text();
 }

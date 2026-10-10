@@ -1,5 +1,3 @@
-$ErrorActionPreference = "Stop"
-$ProjectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-Set-Location $ProjectRoot
-
-node .\stock_secretary.mjs .\holdings.csv --market tw
+# TW holdings secretary. Scheduled Mon-Fri 08:00 (before TW market open).
+& (Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) "run_stock_secretary.ps1") -Market tw
+exit $LASTEXITCODE

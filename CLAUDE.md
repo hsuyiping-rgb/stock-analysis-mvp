@@ -44,7 +44,7 @@ node .\etf_holdings.mjs --date 115/07/10   # 抓指定公告日（民國年，�
 
 ### 每日股票投資秘書
 
-`stock_secretary.mjs` 讀 `holdings.csv`（欄位：`market`/`symbol`/`name`/`quantity`/`cost_basis`/`last_known_price`/`watch_tags`），依 `--market tw|us` 過濾，逐檔組 HTML 卡片（價格、K 線、FinMind 籌碼、Google News RSS 新聞摘要），輸出到 `reports/daily-{market}-YYYY-MM-DD.html` 與 `reports/latest-{market}.html`。`run_daily_stock_secretary.ps1`／`run_us_stock_secretary.ps1` 是 Windows 工作排程器進入點。`holdings.csv` 因 `.gitignore` 的 `*.csv` 規則不進版控，是本機個人資料。
+`stock_secretary.mjs` 讀 `holdings.csv`（欄位：`market`/`symbol`/`name`/`quantity`/`cost_basis`/`last_known_price`/`watch_tags`），依 `--market tw|us` 過濾，逐檔組 HTML 卡片（價格、K 線、FinMind 籌碼、Google News RSS 新聞摘要），輸出到 `reports/daily-{market}-YYYY-MM-DD.html` 與 `reports/latest-{market}.html`。每檔另依 `secretary_rules.json` 門檻（均線排列、RSI、20 日乖離、停利停損、單檔占比）計分，標出「可考慮加碼／續抱觀察／留意減碼」，總覽表另存成 `reports/latest-{market}-mail.html` 當信件內文。`--trading-day-only` 遇到休市日會以結束碼 10 離開（台股查 TWSE 休市日 OpenAPI，美股用程式內的 `US_HOLIDAYS`，每年底要補下一年）。`run_daily_stock_secretary.ps1`（台股 08:00）／`run_us_stock_secretary.ps1`（美股 21:00）是 Windows 工作排程器進入點，都呼叫 `run_stock_secretary.ps1 -Market tw|us` 產生報告並寄信；排程 XML 在 `deploy/`。`holdings.csv` 因 `.gitignore` 的 `*.csv` 規則不進版控，是本機個人資料。
 
 ### ETF 持股研究管線
 
