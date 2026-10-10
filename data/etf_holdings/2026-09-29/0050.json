@@ -1,0 +1,363 @@
+{
+  "stockNo": "0050",
+  "name": "元大台灣50",
+  "issuer": "元大投信",
+  "tranDate": "2026-09-29",
+  "postDate": "2026-09-30",
+  "fetchedAt": "2026-09-29T10:00:19.182Z",
+  "nav": 111.24,
+  "fundNetAsset": 2460073629004,
+  "stocks": [
+    {
+      "code": "2330",
+      "name": "台積電",
+      "shares": 561122841,
+      "amount": null,
+      "weight": 56.55
+    },
+    {
+      "code": "2454",
+      "name": "聯發科",
+      "shares": 33790628,
+      "amount": null,
+      "weight": 6.76
+    },
+    {
+      "code": "2308",
+      "name": "台達電",
+      "shares": 44326132,
+      "amount": null,
+      "weight": 3.31
+    },
+    {
+      "code": "2317",
+      "name": "鴻海",
+      "shares": 280335294,
+      "amount": null,
+      "weight": 2.86
+    },
+    {
+      "code": "3711",
+      "name": "日月光投控",
+      "shares": 76168866,
+      "amount": null,
+      "weight": 2.13
+    },
+    {
+      "code": "2303",
+      "name": "聯電",
+      "shares": 267733226,
+      "amount": null,
+      "weight": 1.67
+    },
+    {
+      "code": "3037",
+      "name": "欣興",
+      "shares": 30284042,
+      "amount": null,
+      "weight": 1.44
+    },
+    {
+      "code": "2383",
+      "name": "台光電",
+      "shares": 6675660,
+      "amount": null,
+      "weight": 1.34
+    },
+    {
+      "code": "2881",
+      "name": "富邦金",
+      "shares": 191523033,
+      "amount": null,
+      "weight": 1.18
+    },
+    {
+      "code": "1303",
+      "name": "南亞",
+      "shares": 113119828,
+      "amount": null,
+      "weight": 1.14
+    },
+    {
+      "code": "2891",
+      "name": "中信金",
+      "shares": 406166163,
+      "amount": null,
+      "weight": 1.14
+    },
+    {
+      "code": "3017",
+      "name": "奇鋐",
+      "shares": 7345038,
+      "amount": null,
+      "weight": 1.02
+    },
+    {
+      "code": "2882",
+      "name": "國泰金",
+      "shares": 219013205,
+      "amount": null,
+      "weight": 0.99
+    },
+    {
+      "code": "2887",
+      "name": "台新新光金",
+      "shares": 537899255,
+      "amount": null,
+      "weight": 0.92
+    },
+    {
+      "code": "2345",
+      "name": "智邦",
+      "shares": 11379619,
+      "amount": null,
+      "weight": 0.84
+    },
+    {
+      "code": "2382",
+      "name": "廣達",
+      "shares": 60732141,
+      "amount": null,
+      "weight": 0.83
+    },
+    {
+      "code": "2327",
+      "name": "國巨*",
+      "shares": 36159830,
+      "amount": null,
+      "weight": 0.81
+    },
+    {
+      "code": "2360",
+      "name": "致茂",
+      "shares": 8464636,
+      "amount": null,
+      "weight": 0.75
+    },
+    {
+      "code": "2885",
+      "name": "元大金",
+      "shares": 263377436,
+      "amount": null,
+      "weight": 0.74
+    },
+    {
+      "code": "2884",
+      "name": "玉山金",
+      "shares": 367010791,
+      "amount": null,
+      "weight": 0.67
+    },
+    {
+      "code": "2059",
+      "name": "川湖",
+      "shares": 1266500,
+      "amount": null,
+      "weight": 0.62
+    },
+    {
+      "code": "2357",
+      "name": "華碩",
+      "shares": 15496736,
+      "amount": null,
+      "weight": 0.61
+    },
+    {
+      "code": "2408",
+      "name": "南亞科",
+      "shares": 29636701,
+      "amount": null,
+      "weight": 0.61
+    },
+    {
+      "code": "6669",
+      "name": "緯穎",
+      "shares": 7120334,
+      "amount": null,
+      "weight": 0.61
+    },
+    {
+      "code": "3443",
+      "name": "創意",
+      "shares": 1847235,
+      "amount": null,
+      "weight": 0.6
+    },
+    {
+      "code": "2883",
+      "name": "凱基金",
+      "shares": 361531584,
+      "amount": null,
+      "weight": 0.57
+    },
+    {
+      "code": "3653",
+      "name": "健策",
+      "shares": 2001835,
+      "amount": null,
+      "weight": 0.56
+    },
+    {
+      "code": "2886",
+      "name": "兆豐金",
+      "shares": 271568477,
+      "amount": null,
+      "weight": 0.54
+    },
+    {
+      "code": "2890",
+      "name": "永豐金",
+      "shares": 300817639,
+      "amount": null,
+      "weight": 0.54
+    },
+    {
+      "code": "3008",
+      "name": "大立光",
+      "shares": 2159058,
+      "amount": null,
+      "weight": 0.53
+    },
+    {
+      "code": "3231",
+      "name": "緯創",
+      "shares": 69355996,
+      "amount": null,
+      "weight": 0.52
+    },
+    {
+      "code": "2301",
+      "name": "光寶科",
+      "shares": 44929218,
+      "amount": null,
+      "weight": 0.51
+    },
+    {
+      "code": "2412",
+      "name": "中華電",
+      "shares": 87679167,
+      "amount": null,
+      "weight": 0.51
+    },
+    {
+      "code": "2344",
+      "name": "華邦電",
+      "shares": 71047203,
+      "amount": null,
+      "weight": 0.5
+    },
+    {
+      "code": "3665",
+      "name": "貿聯-KY",
+      "shares": 4108296,
+      "amount": null,
+      "weight": 0.41
+    },
+    {
+      "code": "2892",
+      "name": "第一金",
+      "shares": 257384548,
+      "amount": null,
+      "weight": 0.4
+    },
+    {
+      "code": "2880",
+      "name": "華南金",
+      "shares": 213368210,
+      "amount": null,
+      "weight": 0.39
+    },
+    {
+      "code": "4958",
+      "name": "臻鼎-KY",
+      "shares": 18138101,
+      "amount": null,
+      "weight": 0.37
+    },
+    {
+      "code": "2368",
+      "name": "金像電",
+      "shares": 7995920,
+      "amount": null,
+      "weight": 0.36
+    },
+    {
+      "code": "6446",
+      "name": "藥華藥",
+      "shares": 7192210,
+      "amount": null,
+      "weight": 0.35
+    },
+    {
+      "code": "1216",
+      "name": "統一",
+      "shares": 113747294,
+      "amount": null,
+      "weight": 0.34
+    },
+    {
+      "code": "2449",
+      "name": "京元電子",
+      "shares": 26272444,
+      "amount": null,
+      "weight": 0.32
+    },
+    {
+      "code": "2395",
+      "name": "研華",
+      "shares": 10594315,
+      "amount": null,
+      "weight": 0.31
+    },
+    {
+      "code": "7769",
+      "name": "鴻勁",
+      "shares": 1308938,
+      "amount": null,
+      "weight": 0.3
+    },
+    {
+      "code": "8046",
+      "name": "南電",
+      "shares": 5757681,
+      "amount": null,
+      "weight": 0.3
+    },
+    {
+      "code": "5880",
+      "name": "合庫金",
+      "shares": 247316423,
+      "amount": null,
+      "weight": 0.26
+    },
+    {
+      "code": "2603",
+      "name": "長榮",
+      "shares": 25054297,
+      "amount": null,
+      "weight": 0.24
+    },
+    {
+      "code": "4904",
+      "name": "遠傳",
+      "shares": 40777305,
+      "amount": null,
+      "weight": 0.17
+    },
+    {
+      "code": "3045",
+      "name": "台灣大",
+      "shares": 32568502,
+      "amount": null,
+      "weight": 0.16
+    },
+    {
+      "code": "6505",
+      "name": "台塑化",
+      "shares": 26537208,
+      "amount": null,
+      "weight": 0.1
+    }
+  ],
+  "category": "tw-passive"
+}
