@@ -50,6 +50,7 @@
 ├─ run_*.ps1                   Windows 工作排程器進入點（run_stock_secretary.ps1 為台股／美股秘書共用）
 ├─ 資產報表/                   個人資產與交易明細（整個資料夾 gitignored，只在 Google Drive）
 │                              含 build_美股複委託投資明細.py、build_台股庫存明細.py → *.xlsx
+│                              美股 xlsx 另含「台幣換匯成本」「股利明細」（來源：元大外幣歷史交易明細 PDF）
 ├─ deploy/                     排程搬遷 SOP（搬遷步驟.md）與 4 個工作排程器 XML
 ├─ config.local.json           FinMind token、Gmail app password（gitignored）
 ├─ data/
